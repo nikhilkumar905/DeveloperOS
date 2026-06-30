@@ -21,6 +21,15 @@ export interface IIntegrationProfile extends Document {
     }>;
     lastSyncedAt: Date;
   };
+  activitySettings?: {
+    github: boolean;
+    leetcode: boolean;
+    hackerrank: boolean;
+    codeforces: boolean;
+    geeksforgeeks: boolean;
+    stackoverflow: boolean;
+    docs: boolean;
+  };
 }
 
 const IntegrationProfileSchema: Schema = new Schema(
@@ -46,6 +55,15 @@ const IntegrationProfileSchema: Schema = new Schema(
         }
       ],
       lastSyncedAt: { type: Date, default: Date.now },
+    },
+    activitySettings: {
+      github: { type: Boolean, default: true },
+      leetcode: { type: Boolean, default: true },
+      hackerrank: { type: Boolean, default: true },
+      codeforces: { type: Boolean, default: true },
+      geeksforgeeks: { type: Boolean, default: true },
+      stackoverflow: { type: Boolean, default: true },
+      docs: { type: Boolean, default: true },
     },
   },
   { timestamps: true }

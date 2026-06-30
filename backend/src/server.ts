@@ -10,6 +10,7 @@ import analyticsRoutes from './routes/analyticsRoutes';
 import graphRoutes from './routes/graphRoutes';
 import resumeRoutes from './routes/resumeRoutes';
 import portfolioRoutes from './routes/portfolioRoutes';
+import activityRoutes from './routes/activityRoutes';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/graph', graphRoutes);
 app.use('/api/resume', resumeRoutes);
 app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/activity', activityRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'API is running' });

@@ -10,6 +10,7 @@ import DashboardLayout from './layouts/DashboardLayout';
 import DashboardHome from './pages/DashboardHome';
 import ResumeStudio from './pages/ResumeStudio';
 import PortfolioGenerator from './pages/PortfolioGenerator';
+import ActivityFeed from './pages/ActivityFeed';
 
 const App: React.FC = () => {
   return (
@@ -26,6 +27,7 @@ const App: React.FC = () => {
             <Route index element={<DashboardHome />} />
             <Route path="resume" element={<ResumeStudio />} />
             <Route path="portfolio" element={<PortfolioGenerator />} />
+            <Route path="activity" element={<ActivityFeed />} />
           </Route>
           
           {/* Fallback */}

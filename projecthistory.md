@@ -64,5 +64,88 @@ syncGithubDataForUser() runs asynchronously in the background and takes ~10-15 s
 The frontend might initially show old cached data (or zero scores) until the sync fully finishes and wipes the DeveloperIntelligence cache.
 Regex Modifications:
 
-If you need to add new technologies to the graph, update the PATH_TO_TECH array in src/services/knowledgeGraphEngine.ts.
-CRITICAL: Never use anchored regexes (^) for file paths, as they will break detection for Monorepos. Always use /(^|\/)/ to match paths securely.
+- If you need to add new technologies to the graph, update the `PATH_TO_TECH` array in `src/services/knowledgeGraphEngine.ts`.
+- **CRITICAL**: Never use anchored regexes (`^`) for file paths, as they will break detection for Monorepos. Always use `/(^|\/)/ to match paths securely.
+
+---
+
+## 5. Port Changes (Applied by User)
+- **Backend**: Changed from `5000` → `6500` (`process.env.PORT || 6500`)
+- **Frontend**: Changed from `5173` → `6501` (via `vite.config.ts`)
+- **GitHub OAuth Callback redirect**: Updated to `http://localhost:6501`
+- All frontend API calls updated from `http://localhost:5000` → `http://localhost:6500`
+
+---
+
+## 6. New Pages Added (Phases 7/8 prep)
+- `ResumeStudio` — `/dashboard/resume` — AI-powered resume builder
+- `PortfolioGenerator` — `/dashboard/portfolio` — Portfolio website generator
+- `resumeRoutes` and `portfolioRoutes` registered at `/api/resume` and `/api/portfolio`
+
+---
+
+## 7. Phase 8: Browser Extension & Activity Synchronization
+
+### Extension Location
+`extensions/chrome/` — built as a Manifest V3 Chrome Extension using TypeScript + Webpack.
+
+### How to Load in Chrome
+1. Run `npm run build:dev` inside `extensions/chrome/`
+2. Open `chrome://extensions` → Enable Developer Mode
+3. Click **Load Unpacked** → select `extensions/chrome/dist/`
+4. Click the extension icon → paste your PersonalOS JWT token
+
+### Extension Architecture
+
+**`src/background.ts`** (Service Worker):
+- Maintains a `chrome.storage.local` buffer of `ActivityEvent[]`
+- Creates a `chrome.alarms` timer that flushes the buffer to `POST /api/activity/log` every 5 minutes
+- Tracks active tab time via `chrome.tabs.onActivated`
+- Authenticates using the user's stored JWT token
+
+**Content Scripts (per platform):**
+| File | Domain | Detects |
+|------|--------|---------|
+| `content/github.ts` | github.com | Repo visits, code views, PR/issue views |
+| `content/leetcode.ts` | leetcode.com | Problem views, solved (via MutationObserver on result), attempts |
+| `content/hackerrank.ts` | hackerrank.com | Challenge views, completions |
+| `content/codeforces.ts` | codeforces.com | Problem views, contest participation, verdicts |
+| `content/gfg.ts` | geeksforgeeks.org | Article reads, problem views with difficulty |
+| `content/stackoverflow.ts` | stackoverflow.com | Question views with tags |
+| `content/docs.ts` | MDN, React, Next.js, Python, Node.js | Reading time tracking |
+
+**`src/popup/popup.tsx`** (React UI):
+- Shows today's stats: coding time, problems solved, streak
+- Platform-by-platform enable/disable toggles (saved to `chrome.storage.local`)
+- Manual "Sync Now" button
+- Connect/Disconnect flow using JWT token paste
+
+### Backend (Phase 8)
+- **`models/ActivityLog.ts`**: Individual activity events (platform, type, metadata, duration, timestamp)
+- **`models/ActivitySession.ts`**: Daily aggregated sessions (totalTimeMs, platformBreakdown, streak, productivityScore)
+- **`services/activityAggregator.ts`**: Rebuilds daily sessions on new event ingestion; calculates streak
+- **`controllers/activityController.ts`**: REST endpoints for log, feed, summary, weekly, heatmap, settings
+- **`routes/activityRoutes.ts`**: All routes under `/api/activity`, all protected by JWT
+
+### REST API Endpoints (Phase 8)
+| Method | Path | Purpose |
+|--------|------|---------|
+| POST | `/api/activity/log` | Batch-ingest events from extension |
+| GET | `/api/activity/feed` | Paginated activity log with platform filter |
+| GET | `/api/activity/summary` | Today's summary + streak + recent activity |
+| GET | `/api/activity/weekly` | Last 7 days for charts |
+| GET | `/api/activity/heatmap` | Last 90 days for calendar heatmap |
+| GET | `/api/activity/settings` | Get per-platform tracking settings |
+| PUT | `/api/activity/settings` | Update per-platform settings |
+
+### Frontend (Phase 8)
+- **`pages/ActivityFeed.tsx`**: Full-page view with 90-day heatmap, weekly bar chart, paginated feed, platform filters, and platform time breakdown panel
+- **`components/ActivityWidget.tsx`**: Dashboard home widget showing today's time, solved count, streak, mini weekly bars, and recent activity list
+- **`layouts/DashboardLayout.tsx`**: Updated with ⚡ Activity Tracker nav link
+- **`App.tsx`**: Added `/dashboard/activity` route
+
+### Key Rules for Phase 8
+- The extension buffers events locally and sends them in batches (never one-by-one per DOM event)
+- MutationObserver is used on LeetCode to detect the submission result without page reloads
+- All activity events include `duration` in milliseconds — content scripts track time-on-page
+- The `activitySettings` field on `IntegrationProfile` stores per-platform toggle state server-side

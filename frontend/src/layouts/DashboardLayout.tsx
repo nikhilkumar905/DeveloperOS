@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Outlet, Navigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { Terminal, LayoutDashboard, UserCircle, LogOut, FileText, Globe } from 'lucide-react';
+import { Terminal, LayoutDashboard, UserCircle, LogOut, FileText, Globe, Zap } from 'lucide-react';
 
 const DashboardLayout: React.FC = () => {
   const { user, logout, isLoading } = useContext(AuthContext);
@@ -30,6 +30,10 @@ const DashboardLayout: React.FC = () => {
           <Link to="/dashboard/portfolio" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', borderRadius: 'var(--radius-md)', color: 'var(--text-main)', fontWeight: 500 }}>
             <Globe size={20} style={{ color: '#a855f7' }} />
             Portfolio Studio
+          </Link>
+          <Link to="/dashboard/activity" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', borderRadius: 'var(--radius-md)', color: 'var(--text-main)', fontWeight: 500 }}>
+            <Zap size={20} style={{ color: '#f59e0b' }} />
+            Activity Tracker
           </Link>
         </nav>
         

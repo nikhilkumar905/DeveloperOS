@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import { Github, Code2, GitBranch, Bell, Calendar, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
 import CreateGoalModal from '../components/CreateGoalModal';
 import { WidgetRegistry } from '../components/WidgetRegistry';
+import ActivityWidget from '../components/ActivityWidget';
 import './DashboardHome.css';
 
 interface Stats {
@@ -84,7 +85,7 @@ const DashboardHome: React.FC = () => {
     if (!token) return;
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.post('http://localhost:5000/api/dashboard/goals', goalData, config);
+      await axios.post('http://localhost:6500/api/dashboard/goals', goalData, config);
       fetchDashboardData();
     } catch (err) {
       console.error('Error creating goal:', err);
@@ -95,7 +96,7 @@ const DashboardHome: React.FC = () => {
     if (!token) return;
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.put(`http://localhost:5000/api/dashboard/notifications/${id}/read`, {}, config);
+      await axios.put(`http://localhost:6500/api/dashboard/notifications/${id}/read`, {}, config);
       setNotifications(notifications.map(n => n._id === id ? { ...n, read: true } : n));
     } catch (err) {
       console.error('Error marking notification as read:', err);
@@ -256,6 +257,9 @@ const DashboardHome: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Activity Widget — Full Width */}
+      <ActivityWidget />
 
       <CreateGoalModal
         isOpen={isGoalModalOpen}
