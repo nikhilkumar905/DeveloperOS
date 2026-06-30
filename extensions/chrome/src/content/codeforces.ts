@@ -21,8 +21,15 @@ const buildEvent = (
   timestamp: new Date().toISOString(),
 });
 
-const entryTime = Date.now();
+let entryTime = Date.now();
+let hasReportedSolved = false;
 const path = window.location.pathname;
+
+const getCappedDuration = (): number => {
+  const dur = Date.now() - entryTime;
+  entryTime = Date.now();
+  return Math.min(dur, 60 * 60 * 1000);
+};
 
 const isProblemPage = /\/problemset\/problem\/|\/contest\/\d+\/problem\//.test(path);
 const isContestPage = /\/contest\/\d+\//.test(path);
@@ -43,7 +50,7 @@ if (isProblemPage) {
   setTimeout(() => {
     sendEvent(buildEvent('problem_view', {
       problemName: getProblemTitle(),
-    }, Date.now() - entryTime));
+    }, getCappedDuration()));
   }, 2000);
 } else if (isContestPage) {
   sendEvent(buildEvent('contest_participated', {
@@ -53,12 +60,14 @@ if (isProblemPage) {
 
 // Watch for verdict after submission
 const observer = new MutationObserver(() => {
+  if (hasReportedSolved) return;
   const verdict = document.querySelector('[class*="verdict-accepted"]') ||
     document.querySelector('.verdict-accepted');
-  if (verdict) {
+  if (verdict && !hasReportedSolved) {
+    hasReportedSolved = true;
     sendEvent(buildEvent('problem_solved', {
       problemName: getProblemTitle(),
-    }, Date.now() - entryTime));
+    }, getCappedDuration()));
     observer.disconnect();
   }
 });
@@ -66,10 +75,12 @@ const observer = new MutationObserver(() => {
 observer.observe(document.body, { childList: true, subtree: true });
 
 window.addEventListener('pagehide', () => {
-  const duration = Date.now() - entryTime;
-  if (isProblemPage && duration > 10000) {
-    sendEvent(buildEvent('problem_view', {
-      problemName: getProblemTitle(),
-    }, duration));
+  if (isProblemPage && !hasReportedSolved) {
+    const dur = getCappedDuration();
+    if (dur > 5000) {
+      sendEvent(buildEvent('problem_view', {
+        problemName: getProblemTitle(),
+      }, dur));
+    }
   }
 });

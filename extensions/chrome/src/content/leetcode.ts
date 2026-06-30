@@ -74,26 +74,37 @@ const getLanguage = (): string => {
 
 // ─── Track Page Entry ──────────────────────────────────────────────────────────
 
-const entryTime = Date.now();
+let entryTime = Date.now();
+let hasReportedSolved = false;
+let hasReportedView = false;
 const { slug, isProblemPage } = parseLeetCodeUrl();
 
+const getCappedDuration = (): number => {
+  const dur = Date.now() - entryTime;
+  entryTime = Date.now(); // Reset timer so subsequent events time fresh interval
+  return Math.min(dur, 60 * 60 * 1000); // Cap any single interval at 1 hour max
+};
+
 if (isProblemPage && slug) {
-  // Fire a "problem_view" event immediately on page load
+  // Fire a "problem_view" event shortly on page load
   setTimeout(() => {
-    const duration = Date.now() - entryTime;
+    if (hasReportedView) return;
+    hasReportedView = true;
     sendEvent(buildEvent('problem_view', {
       problemSlug: slug,
       problemName: getProblemTitle(),
       difficulty: getDifficulty(),
       language: getLanguage(),
-    }, duration));
-  }, 2000);
+    }, getCappedDuration()));
+  }, 3000);
 }
 
 // ─── Observe Submission Result ────────────────────────────────────────────────
 
 if (isProblemPage && slug) {
   const observer = new MutationObserver(() => {
+    if (hasReportedSolved) return;
+
     // LeetCode shows a result dialog or verdict text after submission
     const accepted = document.querySelector(
       '[data-e2e-locator="submission-result"]'
@@ -106,20 +117,22 @@ if (isProblemPage && slug) {
         resultText.includes('runtime error') ||
         resultText.includes('time limit');
 
-      if (isAccepted) {
+      if (isAccepted && !hasReportedSolved) {
+        hasReportedSolved = true;
         sendEvent(buildEvent('problem_solved', {
           problemSlug: slug,
           problemName: getProblemTitle(),
           difficulty: getDifficulty(),
           language: getLanguage(),
-        }, Date.now() - entryTime));
-      } else if (isWrong) {
+        }, getCappedDuration()));
+        observer.disconnect();
+      } else if (isWrong && !hasReportedSolved) {
         sendEvent(buildEvent('problem_attempted', {
           problemSlug: slug,
           problemName: getProblemTitle(),
           difficulty: getDifficulty(),
           language: getLanguage(),
-        }, Date.now() - entryTime));
+        }, getCappedDuration()));
       }
     }
   });
@@ -129,15 +142,15 @@ if (isProblemPage && slug) {
 
 // Report session on page leave
 window.addEventListener('pagehide', () => {
-  if (isProblemPage && slug) {
-    const duration = Date.now() - entryTime;
-    if (duration > 10000) {
+  if (isProblemPage && slug && !hasReportedSolved) {
+    const dur = getCappedDuration();
+    if (dur > 5000) {
       sendEvent(buildEvent('problem_view', {
         problemSlug: slug,
         problemName: getProblemTitle(),
         difficulty: getDifficulty(),
         language: getLanguage(),
-      }, duration));
+      }, dur));
     }
   }
 });

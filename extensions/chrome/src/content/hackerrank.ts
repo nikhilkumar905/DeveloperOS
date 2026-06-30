@@ -21,7 +21,14 @@ const buildEvent = (
   timestamp: new Date().toISOString(),
 });
 
-const entryTime = Date.now();
+let entryTime = Date.now();
+let hasReportedSolved = false;
+
+const getCappedDuration = (): number => {
+  const dur = Date.now() - entryTime;
+  entryTime = Date.now();
+  return Math.min(dur, 60 * 60 * 1000);
+};
 
 const isProblemPage = (): boolean =>
   /\/challenges\/[^/]+\/problem/.test(window.location.pathname);
@@ -38,18 +45,20 @@ if (isProblemPage()) {
   setTimeout(() => {
     sendEvent(buildEvent('problem_view', {
       problemName: getChallengeName(),
-    }, Date.now() - entryTime));
+    }, getCappedDuration()));
   }, 2000);
 }
 
 // Watch for successful submission dialog
 const observer = new MutationObserver(() => {
+  if (hasReportedSolved) return;
   const successEl = document.querySelector('.hr-monaco-result-success') ||
     document.querySelector('[class*="success"]');
-  if (successEl && isProblemPage()) {
+  if (successEl && isProblemPage() && !hasReportedSolved) {
+    hasReportedSolved = true;
     sendEvent(buildEvent('problem_solved', {
       problemName: getChallengeName(),
-    }, Date.now() - entryTime));
+    }, getCappedDuration()));
     observer.disconnect();
   }
 });
@@ -57,10 +66,12 @@ const observer = new MutationObserver(() => {
 observer.observe(document.body, { childList: true, subtree: true });
 
 window.addEventListener('pagehide', () => {
-  const duration = Date.now() - entryTime;
-  if (isProblemPage() && duration > 10000) {
-    sendEvent(buildEvent('problem_view', {
-      problemName: getChallengeName(),
-    }, duration));
+  if (isProblemPage() && !hasReportedSolved) {
+    const dur = getCappedDuration();
+    if (dur > 5000) {
+      sendEvent(buildEvent('problem_view', {
+        problemName: getChallengeName(),
+      }, dur));
+    }
   }
 });
