@@ -13,6 +13,8 @@ export type Platform =
 export type ActivityType =
   | 'repo_visit'
   | 'repo_code_view'
+  | 'repo_push'
+  | 'repo_commit_view'
   | 'problem_view'
   | 'problem_solved'
   | 'problem_attempted'
@@ -59,7 +61,8 @@ const ActivityLogSchema = new Schema<IActivityLog>(
     activityType: {
       type: String,
       enum: [
-        'repo_visit', 'repo_code_view', 'problem_view', 'problem_solved',
+        'repo_visit', 'repo_code_view', 'repo_push', 'repo_commit_view',
+        'problem_view', 'problem_solved',
         'problem_attempted', 'article_read', 'docs_read', 'profile_view',
         'question_view', 'answer_view', 'contest_participated', 'pr_view',
         'issue_view', 'coding_session',

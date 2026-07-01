@@ -37,6 +37,29 @@ export interface ICertificationItem {
   credentialUrl?: string;
 }
 
+export interface IHackathonItem {
+  name: string;
+  achievement?: string;
+  date?: string;
+}
+
+export interface ICategorizedSkill {
+  category: string;
+  skills: string[];
+}
+
+export interface ICustomSectionItem {
+  title: string;
+  subtitle?: string;
+  date?: string;
+  bullets?: string[];
+}
+
+export interface ICustomSection {
+  title: string;
+  items: ICustomSectionItem[];
+}
+
 export type ResumeTemplateType = 
   | 'Software Engineer' 
   | 'Full Stack Developer' 
@@ -55,6 +78,7 @@ export interface IResumeProfile extends Document {
     githubUrl: string;
     linkedinUrl: string;
     websiteUrl: string;
+    customLinks?: Array<{ label: string; url: string }>;
   };
   careerObjective: string;
   targetRole: ResumeTemplateType;
@@ -69,6 +93,9 @@ export interface IResumeProfile extends Document {
     soft: string[];
   };
   certifications: ICertificationItem[];
+  hackathons?: IHackathonItem[];
+  categorizedSkills?: ICategorizedSkill[];
+  customSections?: ICustomSection[];
   achievements: string[];
   atsScore: number;
   atsSuggestions: string[];
@@ -112,6 +139,29 @@ const CertificationSchema = new Schema<ICertificationItem>({
   credentialUrl: { type: String, default: '' }
 });
 
+const HackathonSchema = new Schema<IHackathonItem>({
+  name: { type: String, required: true },
+  achievement: { type: String, default: '' },
+  date: { type: String, default: '' }
+});
+
+const CategorizedSkillSchema = new Schema<ICategorizedSkill>({
+  category: { type: String, required: true },
+  skills: { type: [String], default: [] }
+});
+
+const CustomSectionItemSchema = new Schema<ICustomSectionItem>({
+  title: { type: String, required: true },
+  subtitle: { type: String, default: '' },
+  date: { type: String, default: '' },
+  bullets: { type: [String], default: [] }
+});
+
+const CustomSectionSchema = new Schema<ICustomSection>({
+  title: { type: String, required: true },
+  items: { type: [CustomSectionItemSchema], default: [] }
+});
+
 const ResumeProfileSchema = new Schema<IResumeProfile>(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
@@ -124,6 +174,7 @@ const ResumeProfileSchema = new Schema<IResumeProfile>(
       githubUrl: { type: String, default: '' },
       linkedinUrl: { type: String, default: '' },
       websiteUrl: { type: String, default: '' },
+      customLinks: { type: [{ label: String, url: String }], default: [] },
     },
     careerObjective: { type: String, default: '' },
     targetRole: {
@@ -146,6 +197,9 @@ const ResumeProfileSchema = new Schema<IResumeProfile>(
       soft: { type: [String], default: [] },
     },
     certifications: { type: [CertificationSchema], default: [] },
+    hackathons: { type: [HackathonSchema], default: [] },
+    categorizedSkills: { type: [CategorizedSkillSchema], default: [] },
+    customSections: { type: [CustomSectionSchema], default: [] },
     achievements: { type: [String], default: [] },
     atsScore: { type: Number, default: 0 },
     atsSuggestions: { type: [String], default: [] },

@@ -27,9 +27,12 @@ const formatTime = (iso: string | null): string => {
 const formatTimestamp = (iso?: string): string => {
   if (!iso) return '';
   const d = new Date(iso);
-  const diff = Date.now() - d.getTime();
+  const diff = Math.max(0, Date.now() - d.getTime());
+  if (diff < 60000) {
+    const secs = Math.max(1, Math.floor(diff / 1000));
+    return `${secs}s ago`;
+  }
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
   if (mins < 60) return `${mins}m ago`;
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours}h ago`;
@@ -59,6 +62,8 @@ const PLATFORM_LABELS: Record<string, string> = {
 const ACTIVITY_LABELS: Record<string, string> = {
   repo_visit: 'Visited repo',
   repo_code_view: 'Viewed code in',
+  repo_push: '🚀 Pushed to',
+  repo_commit_view: 'Viewed commit in',
   problem_view: 'Viewed problem',
   problem_solved: '✅ Solved',
   problem_attempted: 'Attempted',
@@ -168,6 +173,21 @@ const Popup: React.FC = () => {
     setIsConnected(false);
     setTodayStats(null);
     setRecentActivity([]);
+  };
+
+  // ── Clear Account History ──
+  const handleClearHistory = async () => {
+    if (!settings.token) return;
+    try {
+      await fetch(`${settings.backendUrl}/api/activity/logs`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${settings.token}` },
+      });
+      setRecentActivity([]);
+      setTodayStats({ totalTimeMs: 0, problemsSolved: 0, streak: 0 });
+      setMessage({ text: 'History cleared!', type: 'success' });
+      setTimeout(() => setMessage(null), 2000);
+    } catch (_) {}
   };
 
   // ── Toggle platform ──
@@ -354,9 +374,16 @@ const Popup: React.FC = () => {
               <div className="divider" />
 
               <button
+                className="btn btn-secondary"
+                onClick={handleClearHistory}
+                style={{ marginTop: 4, marginBottom: 6, borderColor: '#f43f5e', color: '#f43f5e' }}
+              >
+                🗑️ Clear Activity History
+              </button>
+
+              <button
                 className="btn btn-danger"
                 onClick={handleDisconnect}
-                style={{ marginTop: 4 }}
               >
                 Disconnect Account
               </button>

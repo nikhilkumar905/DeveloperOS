@@ -3,6 +3,7 @@ import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { Network, Maximize2, Minimize2, AlertCircle } from 'lucide-react';
 import ForceGraph2D from 'react-force-graph-2d';
+import { API_BASE_URL } from '../lib/api';
 import './KnowledgeGraphWidget.css';
 
 interface GraphNode {
@@ -58,7 +59,7 @@ const KnowledgeGraphWidget: React.FC = () => {
     if (!token) return;
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:6500/api/graph', {
+      const response = await axios.get(`${API_BASE_URL}/api/graph`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

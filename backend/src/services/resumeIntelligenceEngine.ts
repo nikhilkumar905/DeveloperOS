@@ -110,21 +110,45 @@ export const inferResumeData = (
   if (technical.length === 0) technical.push('JavaScript', 'TypeScript', 'Node.js');
   if (frameworks.length === 0) frameworks.push('React', 'Express');
 
-  // 2. Generate Projects
+  // Helper to extract deployed live link from repo homepage or description
+  const extractLiveUrl = (repo: IGithubRepository): string => {
+    if (repo.homepage && repo.homepage.trim()) {
+      let url = repo.homepage.trim();
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = `https://${url}`;
+      }
+      return url;
+    }
+    if (repo.description) {
+      const match = repo.description.match(/(https?:\/\/[^\s)]+)|(([a-zA-Z0-9-]+\.)+(vercel\.app|netlify\.app|github\.io|onrender\.com|indevs\.in)[^\s)]*)/i);
+      if (match) {
+        let url = match[0];
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          url = `https://${url}`;
+        }
+        if (!url.includes('github.com')) {
+          return url;
+        }
+      }
+    }
+    return '';
+  };
+
+  // 2. Generate exactly 3 Best Projects
   const projects: IResumeProject[] = [];
   if (githubStats && githubStats.repositories.length > 0) {
-    // Sort repositories by stars and filePaths richness
+    // Sort repositories by overall quality, stars, forks, and technical richness
     const sortedRepos = [...githubStats.repositories].sort((a, b) => {
-      const scoreA = a.stars * 5 + (a.filePaths?.length || 0) + a.dependencies.length;
-      const scoreB = b.stars * 5 + (b.filePaths?.length || 0) + b.dependencies.length;
+      const scoreA = a.stars * 10 + a.forks * 5 + (a.filePaths?.length || 0) + a.dependencies.length * 2;
+      const scoreB = b.stars * 10 + b.forks * 5 + (b.filePaths?.length || 0) + b.dependencies.length * 2;
       return scoreB - scoreA;
-    }).slice(0, 4);
+    }).slice(0, 3);
 
     sortedRepos.forEach(repo => {
       projects.push({
         name: repo.name,
-        description: repo.description || `Full-stack developer application built with ${repo.language || 'modern technologies'}.`,
-        liveUrl: repo.url,
+        description: repo.description || `Full-stack application built with ${repo.language || 'modern technologies'}.`,
+        liveUrl: extractLiveUrl(repo),
         githubUrl: repo.url,
         technologies: [...(repo.languages || []), ...(repo.dependencies || [])].slice(0, 6),
         bullets: generateProjectBullets(repo)
@@ -189,7 +213,26 @@ export const inferResumeData = (
     ],
     experience,
     projects,
-    skills: { technical, frameworks, tools, soft }
+    skills: { technical, frameworks, tools, soft },
+    categorizedSkills: [
+      { category: 'Programming Languages', skills: technical.length > 0 ? technical : ['C++', 'Python', 'Java', 'JavaScript'] },
+      { category: 'Frontend', skills: frameworks.filter(f => ['react', 'next.js', 'vue', 'tailwind', 'html5', 'css3'].some(x => f.toLowerCase().includes(x))).length > 0 ? frameworks.filter(f => ['react', 'next.js', 'vue', 'tailwind', 'html5', 'css3'].some(x => f.toLowerCase().includes(x))) : ['React', 'HTML5', 'CSS3', 'Tailwind CSS'] },
+      { category: 'Backend & APIs', skills: frameworks.filter(f => ['node', 'express', 'fastapi', 'rest', 'jwt'].some(x => f.toLowerCase().includes(x))).length > 0 ? frameworks.filter(f => ['node', 'express', 'fastapi', 'rest', 'jwt'].some(x => f.toLowerCase().includes(x))) : ['Node.js', 'Express.js', 'FastAPI', 'RESTful APIs', 'JWT Authentication'] },
+      { category: 'Databases', skills: ['MongoDB', 'MySQL'] },
+      { category: 'AI / ML', skills: ['Scikit-learn', 'PyTorch', 'NumPy', 'Pandas', 'Transformer Models', 'Hugging Face Trainer'] },
+      { category: 'Core Computer Science', skills: ['Data Structures & Algorithms', 'Object-Oriented Programming (OOP)', 'Database Management Systems (DBMS)', 'Operating Systems', 'Computer Networks'] },
+      { category: 'Tools and Platforms', skills: tools.length > 0 ? tools : ['Git', 'GitHub', 'VS Code', 'Docker', 'Vercel', 'Render'] }
+    ],
+    hackathons: [
+      { name: 'Odoo Hackathon', achievement: 'Secured Top 10 position in Internal Round', date: '2025' },
+      { name: 'Smart India Hackathon (SIH)', achievement: 'Participant / Finalist', date: '2025' }
+    ],
+    certifications: [
+      { name: 'MongoDB Associate Developer', issuer: 'MongoDB' },
+      { name: 'SQL (Intermediate)', issuer: 'HackerRank' },
+      { name: 'Oracle Certified Professional: Java SE 17 Developer', issuer: 'Oracle' }
+    ],
+    customSections: []
   };
 };
 

@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import { API_BASE_URL } from '../lib/api';
 import './ActivityFeed.css';
-
-const API = 'http://localhost:6500';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -65,6 +64,8 @@ const PLATFORM_ICONS: Record<string, string> = {
 const ACTIVITY_LABELS: Record<string, string> = {
   repo_visit: 'Visited repo',
   repo_code_view: 'Viewed code',
+  repo_push: '🚀 Pushed to',
+  repo_commit_view: 'Viewed commit',
   problem_view: 'Viewed problem',
   problem_solved: '✅ Solved problem',
   problem_attempted: 'Attempted problem',
@@ -130,9 +131,9 @@ const ActivityFeed: React.FC = () => {
   useEffect(() => {
     if (!token) return;
     Promise.all([
-      axios.get(`${API}/api/activity/summary`, { headers }),
-      axios.get(`${API}/api/activity/weekly`, { headers }),
-      axios.get(`${API}/api/activity/heatmap`, { headers }),
+      axios.get(`${API_BASE_URL}/api/activity/summary`, { headers }),
+      axios.get(`${API_BASE_URL}/api/activity/weekly`, { headers }),
+      axios.get(`${API_BASE_URL}/api/activity/heatmap`, { headers }),
     ])
       .then(([s, w, h]) => {
         setSummary(s.data);
@@ -149,7 +150,7 @@ const ActivityFeed: React.FC = () => {
       if (!token) return;
       setFeedLoading(true);
       try {
-        const res = await axios.get(`${API}/api/activity/feed`, {
+        const res = await axios.get(`${API_BASE_URL}/api/activity/feed`, {
           headers,
           params: { page: p, limit: 20, platform: pf },
         });

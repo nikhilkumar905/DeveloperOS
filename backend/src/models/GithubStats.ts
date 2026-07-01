@@ -11,6 +11,7 @@ export interface IGithubRepository {
   filePaths: string[];
   defaultBranch: string;
   description: string;
+  homepage?: string;
 }
 
 export interface IGithubStats extends Document {
@@ -37,6 +38,7 @@ export interface IGithubStats extends Document {
 const GithubRepositorySchema = new Schema<IGithubRepository>({
   name: { type: String, required: true },
   url: { type: String, required: true },
+  homepage: { type: String, default: '' },
   stars: { type: Number, default: 0 },
   forks: { type: Number, default: 0 },
   language: { type: String, default: 'Unknown' },

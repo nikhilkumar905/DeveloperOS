@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { Globe, Download, Palette, Eye, Layout } from 'lucide-react';
+import { API_BASE_URL } from '../lib/api';
 import './PortfolioGenerator.css';
 
 interface IPortfolioSettings {
@@ -50,7 +51,7 @@ const PortfolioGenerator: React.FC = () => {
   const fetchPreviewData = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:6500/api/portfolio/preview', getAuthHeaders());
+      const res = await axios.get(`${API_BASE_URL}/api/portfolio/preview`, getAuthHeaders());
       setSettings(res.data.settings);
       setPreviewData(res.data);
     } catch (err) {
@@ -63,7 +64,7 @@ const PortfolioGenerator: React.FC = () => {
   const handleSaveSettings = async () => {
     if (!settings) return;
     try {
-      const res = await axios.put('http://localhost:6500/api/portfolio/settings', settings, getAuthHeaders());
+      const res = await axios.put(`${API_BASE_URL}/api/portfolio/settings`, settings, getAuthHeaders());
       setSettings(res.data);
       setSaveStatus('Theme settings saved!');
       setTimeout(() => setSaveStatus(''), 3000);
@@ -75,7 +76,7 @@ const PortfolioGenerator: React.FC = () => {
   const handleExportBundle = async () => {
     try {
       setExporting(true);
-      const res = await axios.get('http://localhost:6500/api/portfolio/export/bundle', {
+      const res = await axios.get(`${API_BASE_URL}/api/portfolio/export/bundle`, {
         ...getAuthHeaders(),
         responseType: 'blob'
       });

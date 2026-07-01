@@ -72,81 +72,157 @@ const getLanguage = (): string => {
   return sel?.textContent?.trim() || '';
 };
 
-// ─── Track Page Entry ──────────────────────────────────────────────────────────
+// ─── Track Page State & SPA Navigation ────────────────────────────────────────
 
 let entryTime = Date.now();
 let hasReportedSolved = false;
 let hasReportedView = false;
-const { slug, isProblemPage } = parseLeetCodeUrl();
+let currentSlug: string | null = parseLeetCodeUrl().slug;
+let isCurrentProblemPage = parseLeetCodeUrl().isProblemPage;
 
 const getCappedDuration = (): number => {
   const dur = Date.now() - entryTime;
-  entryTime = Date.now(); // Reset timer so subsequent events time fresh interval
-  return Math.min(dur, 60 * 60 * 1000); // Cap any single interval at 1 hour max
+  entryTime = Date.now();
+  return Math.min(dur, 60 * 60 * 1000);
 };
 
-if (isProblemPage && slug) {
-  // Fire a "problem_view" event shortly on page load
-  setTimeout(() => {
-    if (hasReportedView) return;
-    hasReportedView = true;
-    sendEvent(buildEvent('problem_view', {
-      problemSlug: slug,
+const triggerProblemView = () => {
+  if (!isCurrentProblemPage || !currentSlug || hasReportedView) return;
+  hasReportedView = true;
+  sendEvent(buildEvent('problem_view', {
+    problemSlug: currentSlug,
+    problemName: getProblemTitle(),
+    difficulty: getDifficulty(),
+    language: getLanguage(),
+  }, getCappedDuration()));
+};
+
+const reportVerdict = (type: 'solved' | 'attempted') => {
+  if (!isCurrentProblemPage || !currentSlug) return;
+  if (type === 'solved') {
+    if (hasReportedSolved) return;
+    hasReportedSolved = true;
+    console.log(`[PersonalOS] Problem Solved detected: ${currentSlug}`);
+    sendEvent(buildEvent('problem_solved', {
+      problemSlug: currentSlug,
       problemName: getProblemTitle(),
       difficulty: getDifficulty(),
       language: getLanguage(),
     }, getCappedDuration()));
-  }, 3000);
-}
+  } else {
+    if (hasReportedSolved) return; // Don't report attempt if already solved
+    console.log(`[PersonalOS] Problem Attempt detected: ${currentSlug}`);
+    sendEvent(buildEvent('problem_attempted', {
+      problemSlug: currentSlug,
+      problemName: getProblemTitle(),
+      difficulty: getDifficulty(),
+      language: getLanguage(),
+    }, getCappedDuration()));
+  }
+};
 
-// ─── Observe Submission Result ────────────────────────────────────────────────
+const checkSubmissionVerdict = () => {
+  if (!isCurrentProblemPage || !currentSlug || hasReportedSolved) return;
 
-if (isProblemPage && slug) {
-  const observer = new MutationObserver(() => {
-    if (hasReportedSolved) return;
+  // 1. Check exact data locators first
+  const e2eResult = document.querySelector('[data-e2e-locator="submission-result"]');
+  if (e2eResult) {
+    const text = e2eResult.textContent?.trim().toLowerCase() || '';
+    if (text.includes('accepted') && !text.includes('not accepted')) {
+      reportVerdict('solved');
+      return;
+    }
+    if (text.includes('wrong answer') || text.includes('runtime error') || text.includes('time limit')) {
+      reportVerdict('attempted');
+      return;
+    }
+  }
 
-    // LeetCode shows a result dialog or verdict text after submission
-    const accepted = document.querySelector(
-      '[data-e2e-locator="submission-result"]'
-    );
-
-    if (accepted) {
-      const resultText = accepted.textContent?.toLowerCase() || '';
-      const isAccepted = resultText.includes('accepted');
-      const isWrong = resultText.includes('wrong answer') ||
-        resultText.includes('runtime error') ||
-        resultText.includes('time limit');
-
-      if (isAccepted && !hasReportedSolved) {
-        hasReportedSolved = true;
-        sendEvent(buildEvent('problem_solved', {
-          problemSlug: slug,
-          problemName: getProblemTitle(),
-          difficulty: getDifficulty(),
-          language: getLanguage(),
-        }, getCappedDuration()));
-        observer.disconnect();
-      } else if (isWrong && !hasReportedSolved) {
-        sendEvent(buildEvent('problem_attempted', {
-          problemSlug: slug,
-          problemName: getProblemTitle(),
-          difficulty: getDifficulty(),
-          language: getLanguage(),
-        }, getCappedDuration()));
+  // 2. Scan text elements specifically inside submission/verdict areas
+  const candidates = document.querySelectorAll('span, div, h3, h4, p, a');
+  for (const el of Array.from(candidates)) {
+    const text = el.textContent?.trim() || '';
+    if (text === 'Accepted' || text === 'Success') {
+      const className = (el.className || '') + ' ' + (el.parentElement?.className || '');
+      const lower = className.toLowerCase();
+      if (
+        lower.includes('green') ||
+        lower.includes('success') ||
+        lower.includes('accepted') ||
+        el.closest('[data-layout-path*="submissions"]') ||
+        el.closest('[class*="submission"]') ||
+        el.closest('[class*="result"]')
+      ) {
+        reportVerdict('solved');
+        return;
+      }
+    } else if (text === 'Wrong Answer' || text === 'Runtime Error' || text === 'Time Limit Exceeded') {
+      const className = (el.className || '') + ' ' + (el.parentElement?.className || '');
+      const lower = className.toLowerCase();
+      if (
+        lower.includes('red') ||
+        lower.includes('error') ||
+        el.closest('[data-layout-path*="submissions"]') ||
+        el.closest('[class*="submission"]') ||
+        el.closest('[class*="result"]')
+      ) {
+        reportVerdict('attempted');
+        return;
       }
     }
+  }
+};
+
+const initObserver = () => {
+  const observer = new MutationObserver(() => {
+    checkSubmissionVerdict();
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
-}
+};
 
-// Report session on page leave
+// ─── Handle SPA Navigation (Next.js / Turbo) ─────────────────────────────────
+
+const handleNavigation = () => {
+  const { slug, isProblemPage } = parseLeetCodeUrl();
+  if (slug !== currentSlug || isProblemPage !== isCurrentProblemPage) {
+    currentSlug = slug;
+    isCurrentProblemPage = isProblemPage;
+    hasReportedSolved = false;
+    hasReportedView = false;
+    entryTime = Date.now();
+
+    if (isCurrentProblemPage && currentSlug) {
+      setTimeout(triggerProblemView, 3000);
+    }
+  }
+};
+
+const hookHistoryNavigation = () => {
+  const originalPushState = history.pushState.bind(history);
+  history.pushState = function (state, title, url) {
+    originalPushState(state, title, url);
+    setTimeout(handleNavigation, 400);
+  };
+
+  window.addEventListener('popstate', () => {
+    setTimeout(handleNavigation, 400);
+  });
+};
+
+// Initialize
+if (isCurrentProblemPage && currentSlug) {
+  setTimeout(triggerProblemView, 3000);
+}
+initObserver();
+hookHistoryNavigation();
+
 window.addEventListener('pagehide', () => {
-  if (isProblemPage && slug && !hasReportedSolved) {
+  if (isCurrentProblemPage && currentSlug && !hasReportedSolved) {
     const dur = getCappedDuration();
     if (dur > 5000) {
       sendEvent(buildEvent('problem_view', {
-        problemSlug: slug,
+        problemSlug: currentSlug,
         problemName: getProblemTitle(),
         difficulty: getDifficulty(),
         language: getLanguage(),

@@ -149,3 +149,68 @@ Regex Modifications:
 - MutationObserver is used on LeetCode to detect the submission result without page reloads
 - All activity events include `duration` in milliseconds — content scripts track time-on-page
 - The `activitySettings` field on `IntegrationProfile` stores per-platform toggle state server-side
+
+---
+
+## 8. Phase 8 Bug Fixes & Single-Page Application (SPA) Support
+
+### Webpack CSP & Eval Fix
+- **Problem**: Webpack development build mode injected `eval()` wrapper blocks in compiled extension source code, violating Chrome's strict Manifest V3 Content Security Policy (CSP) for Service Workers.
+- **Fix**: Adjusted `webpack.config.js` to set `devtool: 'source-map'` and compiled the extension with production configurations (`npm run build`). This completely removed `eval()` from the output `background.js` and content scripts.
+
+### Extension Token Management
+- Added a **"🔑 Copy Token"** utility directly inside the `ActivityWidget` on the React web dashboard. Users can copy their current JWT token with one click and paste it into the Chrome extension popup.
+
+### MutationObserver Deduplication & Duration Capping
+- **Problem**: MutationObservers on coding platforms (LeetCode, Codeforces, HackerRank) triggered multiple times during DOM animation shifts, generating dozens of duplicate events. Combined with overnight open tabs, this resulted in erroneous tracking metrics like "93h 34m" coding time.
+- **Fix**:
+  - Implemented a `hasReportedSolved` lock in the observers to prevent duplicate triggers on the same problem.
+  - Added duration capping (max 1 hour per continuous interval).
+  - Reset `entryTime = Date.now()` after sending events to keep subsequent timings fresh.
+  - Added a relative timestamp helper (`formatTimestamp`) to the extension popup, changing the right-hand column from raw event duration to relative times (e.g., "4m ago").
+
+### GitHub SPA (Turbo) & Push Detection
+- **Problem**: GitHub operates as a single-page app (SPA) using HTML5 History API (Turbo). Traditional `pagehide`/`beforeunload` listeners missed internal page navigations. It also lacked a way to record repository commits and pushes.
+- **Fix**:
+  - **SPA Support**: Intercepted `history.pushState` and added `popstate` event listeners to catch url changes within GitHub.
+  - **Push Detection**: Added support for detecting when a user views commit branches (`commits/` or `compare/`) or when GitHub displays a successful push template flash banner.
+  - **New Activity Types**: Added `repo_push` (🚀 Pushed to) and `repo_commit_view` (Viewed commit) end-to-end (manifest types, backend schema, aggregator, dashboard widgets, and pages).
+
+---
+
+## 9. Phase 10 Production Release Audit (v1.0.0)
+
+### Production Readiness & Infrastructure
+- **Containerization**: Created multi-stage high-performance Dockerfiles for `backend` and `frontend` (served via Nginx SPA configuration), orchestrated by `docker-compose.yml`.
+- **Automated CI/CD**: Created `.github/workflows/ci.yml` verifying TypeScript compilation, linting, and production bundles for backend, frontend, and browser extension on push/PR.
+- **Security Hardening**: Integrated `helmet` HTTP headers, `compression` payload optimization, strict CORS whitelist filtering, and two-tier rate limiting (`authLimiter` at 20 req/15m and `apiLimiter` at 300 req/15m).
+- **Environment Management**: Centralized frontend API communications via `src/lib/api.ts` (`VITE_API_URL`) and provided comprehensive `.env.example` templates across all subdirectories.
+
+### Critical Bug Fixes
+- **Auth Middleware Double-Response**: Restructured `protect` middleware in `authMiddleware.ts` with explicit early returns to eliminate "Headers already sent" runtime errors.
+- **Insecure JWT Secrets**: Removed dangerous `'secret123'` fallback values across authentication endpoints, ensuring instant failure on missing `JWT_SECRET`.
+- **GitHub OAuth Port Fix**: Updated OAuth callback redirection to dynamically reference `FRONTEND_URL` rather than hardcoded port `5173`.
+- **Dynamic Dashboard Metrics**: Replaced hardcoded `activeProjectsCount = 3` with real repository counts from `GithubStats`, implemented timeline pagination (`?page=1&limit=20`), and refined productivity scores to account for repository count when GraphQL commits are unavailable.
+- **Input Validation**: Added strict validation rules (name length >= 2, valid email regex, password length >= 8) to user registration and login endpoints.
+
+---
+
+## 10. Phase 11: Advanced Resume Builder layout, Separate URLs, and Repo Selector
+
+### Layout & Formatting Improvements
+- **Unicode PDF Bullet Fix**: Replaced standard Unicode `●` bullet character rendering (which generated `% 1` encoding artifacts in PDFkit standard fonts) with custom vector-drawn circles (`doc.circle`).
+- **LaTeX Layout Symmetry**: Refactored generated PDF spacing, margins, and horizontal section divider lines to precisely mimic the user's LaTeX `resume.xml` template.
+- **Space Protection**: Implemented exact `******` placeholder output for any missing personal contact fields (email, phone, linkedin, github, location) to prevent horizontal layout compression or space vulnerability shifts.
+
+### GitHub Integration & Project Customization
+- **Separate GitHub & Live Hyperlinks**: Decoupled project link rendering. GitHub and Live links are now drawn as separate, independent click targets with distinct hyperlinks.
+- **Intelligent URL Extraction**: Synced repositories now store their `homepage` URL. The engine scans the repository homepage, description, and README markdown files for live deployment URL patterns to auto-fill `liveUrl`. It automatically normalizes naked domains (e.g., `crowd-source-disaster-management.vercel.app` without `http`/`https`) by prepending `https://` to ensure valid click targets.
+- **Manual GitHub Project Selector**: Added a React-based **"⚡ Import from GitHub"** modal in Resume Studio. Users can browse their synced GitHub repositories, select a project, automatically generate customizable bullet points based on project details, and manually edit the name, stack, URLs, and bullets.
+
+### Extension Fast Sync & Strict GitHub Push Tracking
+- **Instant Syncing**: Updated extension background worker to immediately trigger `flushBuffer()` whenever priority events (`problem_solved`, `repo_push`, `repo_commit_view`) occur, and reduced routine sync interval from 5 minutes to 1 minute.
+- **Strict Push & Commit Tracking**: Removed generic `repo_visit` and `repo_code_view` tracking from GitHub content script so it strictly tracks commits, branch comparisons, PRs, issues, and push flash banners.
+- **LeetCode SPA & Precise Verdict Detection**: Hooked `history.pushState` and `popstate` inside `leetcode.ts` to detect Next.js/React client-side problem navigations without page refreshes. Replaced fragile single `querySelector` with comprehensive DOM scanning across verdict elements (`Accepted`, `Wrong Answer`) inside submission containers without disconnecting.
+- **Accurate Relative Timestamps**: Updated popup timestamp formatting to display exact seconds (e.g., `12s ago`) for events under 1 minute instead of generic `just now`.
+- **Clear Activity History Control**: Added `DELETE /api/activity/logs` endpoint and a one-click **"🗑️ Clear Activity History"** button in the extension popup Settings tab so developers can wipe stored test logs and reset their feed at any time.
+- **CORS Extension Origin Allowlist**: Updated Express server CORS middleware to allow browser extension origins (`chrome-extension://`).

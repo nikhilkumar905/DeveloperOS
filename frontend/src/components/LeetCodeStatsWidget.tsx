@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { Code2, Target, Trophy, AlertCircle, RefreshCw, XCircle, CheckCircle2 } from 'lucide-react';
+import { API_BASE_URL } from '../lib/api';
 import './LeetCodeStatsWidget.css';
 
 interface LeetCodeStats {
@@ -36,7 +37,7 @@ const LeetCodeStatsWidget: React.FC = () => {
   const fetchStats = useCallback(async () => {
     if (!token) return;
     try {
-      const response = await axios.get('http://localhost:6500/api/leetcode/stats', {
+      const response = await axios.get(`${API_BASE_URL}/api/leetcode/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!response.data) {
@@ -66,7 +67,7 @@ const LeetCodeStatsWidget: React.FC = () => {
     if (!token || !usernameInput.trim()) return;
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:6500/api/leetcode/connect', 
+      const res = await axios.post(`${API_BASE_URL}/api/leetcode/connect`, 
         { username: usernameInput.trim() },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -84,7 +85,7 @@ const LeetCodeStatsWidget: React.FC = () => {
   const handleDisconnect = async () => {
     if (!token) return;
     try {
-      await axios.post('http://localhost:6500/api/leetcode/disconnect', {}, {
+      await axios.post(`${API_BASE_URL}/api/leetcode/disconnect`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setIsConnected(false);
@@ -100,7 +101,7 @@ const LeetCodeStatsWidget: React.FC = () => {
     if (!token) return;
     setSyncing(true);
     try {
-      const res = await axios.post('http://localhost:6500/api/leetcode/sync', {}, {
+      const res = await axios.post(`${API_BASE_URL}/api/leetcode/sync`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (statsData) {

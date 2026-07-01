@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: developer-os-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: developer-os-backend
+    restart: always
+    ports:
+      - "6500:6500"
+    environment:
+      - PORT=6500
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/developer-os
+      - JWT_SECRET=${JWT_SECRET:-super_secret_jwt_key_docker_1234567890}
+      - FRONTEND_URL=http://localhost:6501
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+    depends_on:
+      - mongo
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:6500
+    container_name: developer-os-frontend
+    restart: always
+    ports:
+      - "6501:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:

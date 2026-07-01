@@ -5,6 +5,7 @@ import { Github, Code2, GitBranch, Bell, Calendar, Plus, CheckCircle2, AlertCirc
 import CreateGoalModal from '../components/CreateGoalModal';
 import { WidgetRegistry } from '../components/WidgetRegistry';
 import ActivityWidget from '../components/ActivityWidget';
+import { API_BASE_URL } from '../lib/api';
 import './DashboardHome.css';
 
 interface Stats {
@@ -58,10 +59,10 @@ const DashboardHome: React.FC = () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const [statsRes, goalsRes, notifyRes, timelineRes] = await Promise.all([
-        axios.get('http://localhost:6500/api/dashboard/stats', config),
-        axios.get('http://localhost:6500/api/dashboard/goals', config),
-        axios.get('http://localhost:6500/api/dashboard/notifications', config),
-        axios.get('http://localhost:6500/api/dashboard/timeline', config)
+        axios.get(`${API_BASE_URL}/api/dashboard/stats`, config),
+        axios.get(`${API_BASE_URL}/api/dashboard/goals`, config),
+        axios.get(`${API_BASE_URL}/api/dashboard/notifications`, config),
+        axios.get(`${API_BASE_URL}/api/dashboard/timeline`, config)
       ]);
 
       setStats(statsRes.data);
@@ -85,7 +86,7 @@ const DashboardHome: React.FC = () => {
     if (!token) return;
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.post('http://localhost:6500/api/dashboard/goals', goalData, config);
+      await axios.post(`${API_BASE_URL}/api/dashboard/goals`, goalData, config);
       fetchDashboardData();
     } catch (err) {
       console.error('Error creating goal:', err);
@@ -96,7 +97,7 @@ const DashboardHome: React.FC = () => {
     if (!token) return;
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.put(`http://localhost:6500/api/dashboard/notifications/${id}/read`, {}, config);
+      await axios.put(`${API_BASE_URL}/api/dashboard/notifications/${id}/read`, {}, config);
       setNotifications(notifications.map(n => n._id === id ? { ...n, read: true } : n));
     } catch (err) {
       console.error('Error marking notification as read:', err);

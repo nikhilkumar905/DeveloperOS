@@ -101,7 +101,7 @@ export const rebuildDailySession = async (
 
     if (log.activityType === 'problem_solved') problemsSolved++;
     if (log.activityType === 'problem_attempted') problemsAttempted++;
-    if (log.activityType === 'repo_visit') reposVisited++;
+    if (log.activityType === 'repo_visit' || log.activityType === 'repo_push') reposVisited++;
     if (['article_read', 'docs_read'].includes(log.activityType)) articlesRead++;
   }
 

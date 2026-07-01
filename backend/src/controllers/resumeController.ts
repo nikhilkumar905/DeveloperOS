@@ -149,8 +149,12 @@ export const exportResumePdf = async (req: Request, res: Response): Promise<void
       metadata: { targetRole: profile.targetRole }
     });
 
+    const rawName = req.query.filename ? String(req.query.filename).trim() : `${profile.personalInfo.fullName || 'Developer'}_Resume`;
+    const cleanName = rawName.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+    const filename = cleanName.toLowerCase().endsWith('.pdf') ? cleanName : `${cleanName}.pdf`;
+
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${(profile.personalInfo.fullName || 'Developer').replace(/\s+/g, '_')}_Resume.pdf"`);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(pdfBuffer);
   } catch (error: any) {
     console.error('Error generating PDF:', error);

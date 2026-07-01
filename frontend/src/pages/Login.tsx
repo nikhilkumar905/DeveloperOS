@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { Terminal } from 'lucide-react';
+import { API_BASE_URL } from '../lib/api';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -14,7 +15,7 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:6500/api/auth/login', { email, password });
+      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });
       login(res.data);
       navigate('/dashboard');
     } catch (err: any) {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { Brain, RefreshCw, Zap, TrendingUp, AlertTriangle, Target, CheckCircle2 } from 'lucide-react';
+import { API_BASE_URL } from '../lib/api';
 import './DeveloperIntelligenceWidget.css';
 
 interface IntelligenceData {
@@ -47,8 +48,8 @@ const DeveloperIntelligenceWidget: React.FC = () => {
     setError('');
     try {
       const url = isRefresh 
-        ? 'http://localhost:6500/api/analytics/insights/refresh'
-        : 'http://localhost:6500/api/analytics/insights';
+        ? `${API_BASE_URL}/api/analytics/insights/refresh`
+        : `${API_BASE_URL}/api/analytics/insights`;
       const method = isRefresh ? 'post' : 'get';
       
       const response = await axios({

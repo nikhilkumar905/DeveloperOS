@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { Github, Star, GitFork, GitPullRequest, AlertCircle, RefreshCw, XCircle } from 'lucide-react';
+import { API_BASE_URL } from '../lib/api';
 import './GithubStatsWidget.css';
 
 interface GithubStats {
@@ -38,7 +39,7 @@ const GithubStatsWidget: React.FC = () => {
   const fetchStats = useCallback(async () => {
     if (!token) return;
     try {
-      const response = await axios.get('http://localhost:6500/api/github/stats', {
+      const response = await axios.get(`${API_BASE_URL}/api/github/stats`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -72,7 +73,7 @@ const GithubStatsWidget: React.FC = () => {
   const handleConnect = async () => {
     if (!token) return;
     try {
-      const res = await axios.get('http://localhost:6500/api/github/auth-url', {
+      const res = await axios.get(`${API_BASE_URL}/api/github/auth-url`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       window.location.href = res.data.url;
@@ -85,7 +86,7 @@ const GithubStatsWidget: React.FC = () => {
   const handleDisconnect = async () => {
     if (!token) return;
     try {
-      await axios.post('http://localhost:6500/api/github/disconnect', {}, {
+      await axios.post(`${API_BASE_URL}/api/github/disconnect`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setIsConnected(false);
@@ -100,7 +101,7 @@ const GithubStatsWidget: React.FC = () => {
     if (!token) return;
     setSyncing(true);
     try {
-      const res = await axios.post('http://localhost:6500/api/github/sync', {}, {
+      const res = await axios.post(`${API_BASE_URL}/api/github/sync`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(res.data);

@@ -13,7 +13,7 @@ import { ActivityEvent, ExtensionSettings, MessageType } from './types';
 const BUFFER_KEY = 'activity_buffer';
 const SETTINGS_KEY = 'extension_settings';
 const FLUSH_ALARM = 'flush_activity_buffer';
-const FLUSH_INTERVAL_MINUTES = 5;
+const FLUSH_INTERVAL_MINUTES = 1;
 
 // ─── Default Settings ────────────────────────────────────────────────────────
 
@@ -169,6 +169,14 @@ chrome.runtime.onMessage.addListener((message: MessageType, _sender, sendRespons
     switch (message.type) {
       case 'ACTIVITY_EVENT': {
         await addToBuffer(message.event);
+        // Immediately flush on important actions or when buffer reaches 5 events
+        if (
+          message.event.activityType === 'problem_solved' ||
+          message.event.activityType === 'repo_push' ||
+          message.event.activityType === 'repo_commit_view'
+        ) {
+          await flushBuffer();
+        }
         sendResponse({ ok: true });
         break;
       }

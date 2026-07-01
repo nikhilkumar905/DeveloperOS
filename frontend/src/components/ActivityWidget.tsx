@@ -2,9 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { API_BASE_URL } from '../lib/api';
 import './ActivityWidget.css';
-
-const API = 'http://localhost:6500';
 
 interface SummaryData {
   totalTimeMs: number;
@@ -32,9 +31,10 @@ const PLATFORM_ICONS: Record<string, string> = {
 };
 
 const ACTIVITY_LABELS: Record<string, string> = {
-  repo_visit: 'Repo visit', repo_code_view: 'Code view', problem_view: 'Problem viewed',
-  problem_solved: '✅ Solved', problem_attempted: 'Attempted', article_read: 'Article read',
-  docs_read: 'Docs read', question_view: 'Question read', pr_view: 'PR view', issue_view: 'Issue view',
+  repo_visit: 'Repo visit', repo_code_view: 'Code view', repo_push: '🚀 Pushed to', repo_commit_view: 'Commit view',
+  problem_view: 'Problem viewed', problem_solved: '✅ Solved', problem_attempted: 'Attempted',
+  article_read: 'Article read', docs_read: 'Docs read', question_view: 'Question read',
+  pr_view: 'PR view', issue_view: 'Issue view',
 };
 
 const DAY_ABBR = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -77,8 +77,8 @@ const ActivityWidget: React.FC = () => {
     if (!token) return;
     const headers = { Authorization: `Bearer ${token}` };
     Promise.all([
-      axios.get(`${API}/api/activity/summary`, { headers }),
-      axios.get(`${API}/api/activity/weekly`, { headers }),
+      axios.get(`${API_BASE_URL}/api/activity/summary`, { headers }),
+      axios.get(`${API_BASE_URL}/api/activity/weekly`, { headers }),
     ])
       .then(([s, w]) => {
         setSummary(s.data);

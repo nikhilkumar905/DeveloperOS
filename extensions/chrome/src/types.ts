@@ -13,6 +13,8 @@ export type Platform =
 export type ActivityType =
   | 'repo_visit'
   | 'repo_code_view'
+  | 'repo_push'
+  | 'repo_commit_view'
   | 'problem_view'
   | 'problem_solved'
   | 'problem_attempted'

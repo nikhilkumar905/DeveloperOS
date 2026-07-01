@@ -25,7 +25,8 @@ export const logActivity = async (req: Request, res: Response): Promise<void> =>
     // Validate and sanitize events
     const validPlatforms = ['github', 'leetcode', 'hackerrank', 'codeforces', 'geeksforgeeks', 'stackoverflow', 'docs', 'other'];
     const validTypes = [
-      'repo_visit', 'repo_code_view', 'problem_view', 'problem_solved',
+      'repo_visit', 'repo_code_view', 'repo_push', 'repo_commit_view',
+      'problem_view', 'problem_solved',
       'problem_attempted', 'article_read', 'docs_read', 'profile_view',
       'question_view', 'answer_view', 'contest_participated', 'pr_view',
       'issue_view', 'coding_session',
@@ -280,5 +281,21 @@ export const updateActivitySettings = async (req: Request, res: Response): Promi
   } catch (error: any) {
     console.error('updateActivitySettings error:', error);
     res.status(500).json({ message: 'Failed to update settings', error: error.message });
+  }
+};
+
+/**
+ * DELETE /api/activity/logs
+ * Clears all activity logs and sessions for the user so they can start fresh.
+ */
+export const clearActivityLogs = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req as any).user._id;
+    await ActivityLog.deleteMany({ user: userId });
+    await ActivitySession.deleteMany({ user: userId });
+    res.json({ message: 'All activity logs and sessions cleared successfully.' });
+  } catch (error: any) {
+    console.error('clearActivityLogs error:', error);
+    res.status(500).json({ message: 'Failed to clear logs', error: error.message });
   }
 };

@@ -8,6 +8,7 @@ import {
   getHeatmapData,
   getActivitySettings,
   updateActivitySettings,
+  clearActivityLogs,
 } from '../controllers/activityController';
 
 const router = Router();
@@ -22,5 +23,6 @@ router.get('/weekly', getWeeklyActivity);
 router.get('/heatmap', getHeatmapData);
 router.get('/settings', getActivitySettings);
 router.put('/settings', updateActivitySettings);
+router.delete('/logs', clearActivityLogs);
 
 export default router;
