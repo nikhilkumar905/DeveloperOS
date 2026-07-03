@@ -157,7 +157,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === FLUSH_ALARM) {
     const count = await flushBuffer();
     if (count > 0) {
-      chrome.runtime.sendMessage({ type: 'SYNC_COMPLETE', count } as MessageType).catch(() => {});
+      chrome.runtime.sendMessage({ type: 'SYNC_COMPLETE', count } as MessageType).catch(() => { });
     }
   }
 });
@@ -213,4 +213,11 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     await saveSettings(DEFAULT_SETTINGS);
     console.log('[PersonalOS] Extension installed. Please set your JWT token in the popup.');
   }
+  await clearBuffer();
 });
+
+chrome.runtime.onStartup.addListener(async () => {
+  await clearBuffer();
+});
+
+// EOF

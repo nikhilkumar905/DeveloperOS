@@ -124,7 +124,7 @@ const Popup: React.FC = () => {
   useEffect(() => {
     sendMessage<{ count: number }>({ type: 'GET_PENDING_COUNT' })
       .then((res) => setPendingCount(res?.count || 0))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // ── Load today's stats from backend ──
@@ -143,7 +143,7 @@ const Popup: React.FC = () => {
         });
         setRecentActivity(data.recentActivity || []);
       }
-    } catch (_) {}
+    } catch (_) { }
   }, [settings.token, settings.backendUrl]);
 
   useEffect(() => {
@@ -187,7 +187,7 @@ const Popup: React.FC = () => {
       setTodayStats({ totalTimeMs: 0, problemsSolved: 0, streak: 0 });
       setMessage({ text: 'History cleared!', type: 'success' });
       setTimeout(() => setMessage(null), 2000);
-    } catch (_) {}
+    } catch (_) { }
   };
 
   // ── Toggle platform ──

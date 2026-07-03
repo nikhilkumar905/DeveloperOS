@@ -76,9 +76,9 @@ const getLanguage = (): string => {
 
 let entryTime = Date.now();
 let hasReportedSolved = false;
-let hasReportedView = false;
 let currentSlug: string | null = parseLeetCodeUrl().slug;
 let isCurrentProblemPage = parseLeetCodeUrl().isProblemPage;
+let lastHref = window.location.href;
 
 const getCappedDuration = (): number => {
   const dur = Date.now() - entryTime;
@@ -86,16 +86,7 @@ const getCappedDuration = (): number => {
   return Math.min(dur, 60 * 60 * 1000);
 };
 
-const triggerProblemView = () => {
-  if (!isCurrentProblemPage || !currentSlug || hasReportedView) return;
-  hasReportedView = true;
-  sendEvent(buildEvent('problem_view', {
-    problemSlug: currentSlug,
-    problemName: getProblemTitle(),
-    difficulty: getDifficulty(),
-    language: getLanguage(),
-  }, getCappedDuration()));
-};
+// Problem View removed per user request
 
 const reportVerdict = (type: 'solved' | 'attempted') => {
   if (!isCurrentProblemPage || !currentSlug) return;
@@ -121,64 +112,40 @@ const reportVerdict = (type: 'solved' | 'attempted') => {
   }
 };
 
-const checkSubmissionVerdict = () => {
-  if (!isCurrentProblemPage || !currentSlug || hasReportedSolved) return;
-
-  // 1. Check exact data locators first
-  const e2eResult = document.querySelector('[data-e2e-locator="submission-result"]');
-  if (e2eResult) {
-    const text = e2eResult.textContent?.trim().toLowerCase() || '';
-    if (text.includes('accepted') && !text.includes('not accepted')) {
-      reportVerdict('solved');
-      return;
-    }
-    if (text.includes('wrong answer') || text.includes('runtime error') || text.includes('time limit')) {
-      reportVerdict('attempted');
-      return;
-    }
-  }
-
-  // 2. Scan text elements specifically inside submission/verdict areas
-  const candidates = document.querySelectorAll('span, div, h3, h4, p, a');
-  for (const el of Array.from(candidates)) {
-    const text = el.textContent?.trim() || '';
-    if (text === 'Accepted' || text === 'Success') {
-      const className = (el.className || '') + ' ' + (el.parentElement?.className || '');
-      const lower = className.toLowerCase();
-      if (
-        lower.includes('green') ||
-        lower.includes('success') ||
-        lower.includes('accepted') ||
-        el.closest('[data-layout-path*="submissions"]') ||
-        el.closest('[class*="submission"]') ||
-        el.closest('[class*="result"]')
-      ) {
-        reportVerdict('solved');
-        return;
-      }
-    } else if (text === 'Wrong Answer' || text === 'Runtime Error' || text === 'Time Limit Exceeded') {
-      const className = (el.className || '') + ' ' + (el.parentElement?.className || '');
-      const lower = className.toLowerCase();
-      if (
-        lower.includes('red') ||
-        lower.includes('error') ||
-        el.closest('[data-layout-path*="submissions"]') ||
-        el.closest('[class*="submission"]') ||
-        el.closest('[class*="result"]')
-      ) {
-        reportVerdict('attempted');
-        return;
-      }
-    }
-  }
-};
-
 const initObserver = () => {
   const observer = new MutationObserver(() => {
-    checkSubmissionVerdict();
+    // Robust SPA URL monitor: catching URL changes even if history API is completely bypassed
+    if (window.location.href !== lastHref) {
+      lastHref = window.location.href;
+      setTimeout(handleNavigation, 100);
+    }
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
+};
+
+// ─── Fetch Interceptor for Reliable Submission Detection ───────────────────────
+
+const setupFetchInterceptorListener = () => {
+  const script = document.createElement('script');
+  script.src = chrome.runtime.getURL('content/leetcode-inject.js');
+  (document.head || document.documentElement).appendChild(script);
+  script.onload = () => script.remove();
+
+  window.addEventListener('message', (event) => {
+    if (event.source !== window || !event.data || event.data.type !== 'LEETCODE_SUBMISSION') return;
+    const { data } = event.data;
+    if (data.status_msg === 'Accepted') {
+      reportVerdict('solved');
+    } else if (
+      data.status_msg === 'Wrong Answer' ||
+      data.status_msg === 'Runtime Error' ||
+      data.status_msg === 'Time Limit Exceeded' ||
+      data.status_msg === 'Compile Error'
+    ) {
+      reportVerdict('attempted');
+    }
+  });
 };
 
 // ─── Handle SPA Navigation (Next.js / Turbo) ─────────────────────────────────
@@ -189,44 +156,25 @@ const handleNavigation = () => {
     currentSlug = slug;
     isCurrentProblemPage = isProblemPage;
     hasReportedSolved = false;
-    hasReportedView = false;
     entryTime = Date.now();
-
-    if (isCurrentProblemPage && currentSlug) {
-      setTimeout(triggerProblemView, 3000);
-    }
+    lastHref = window.location.href;
   }
 };
 
 const hookHistoryNavigation = () => {
-  const originalPushState = history.pushState.bind(history);
-  history.pushState = function (state, title, url) {
-    originalPushState(state, title, url);
-    setTimeout(handleNavigation, 400);
-  };
+  // Content scripts cannot safely override history.pushState in the main world.
+  // We use a robust polling approach to detect SPA navigation changes.
+  setInterval(() => {
+    if (window.location.href !== lastHref) {
+      handleNavigation();
+    }
+  }, 1000);
 
   window.addEventListener('popstate', () => {
     setTimeout(handleNavigation, 400);
   });
 };
 
-// Initialize
-if (isCurrentProblemPage && currentSlug) {
-  setTimeout(triggerProblemView, 3000);
-}
 initObserver();
+setupFetchInterceptorListener();
 hookHistoryNavigation();
-
-window.addEventListener('pagehide', () => {
-  if (isCurrentProblemPage && currentSlug && !hasReportedSolved) {
-    const dur = getCappedDuration();
-    if (dur > 5000) {
-      sendEvent(buildEvent('problem_view', {
-        problemSlug: currentSlug,
-        problemName: getProblemTitle(),
-        difficulty: getDifficulty(),
-        language: getLanguage(),
-      }, dur));
-    }
-  }
-});

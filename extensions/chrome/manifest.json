@@ -31,33 +31,57 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://github.com/*"],
-      "js": ["content/github.js"],
+      "matches": [
+        "https://github.com/*"
+      ],
+      "js": [
+        "content/github.js"
+      ],
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://leetcode.com/*"],
-      "js": ["content/leetcode.js"],
+      "matches": [
+        "https://leetcode.com/*"
+      ],
+      "js": [
+        "content/leetcode.js"
+      ],
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://www.hackerrank.com/*"],
-      "js": ["content/hackerrank.js"],
+      "matches": [
+        "https://www.hackerrank.com/*"
+      ],
+      "js": [
+        "content/hackerrank.js"
+      ],
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://codeforces.com/*"],
-      "js": ["content/codeforces.js"],
+      "matches": [
+        "https://codeforces.com/*"
+      ],
+      "js": [
+        "content/codeforces.js"
+      ],
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://www.geeksforgeeks.org/*"],
-      "js": ["content/gfg.js"],
+      "matches": [
+        "https://www.geeksforgeeks.org/*"
+      ],
+      "js": [
+        "content/gfg.js"
+      ],
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://stackoverflow.com/*"],
-      "js": ["content/stackoverflow.js"],
+      "matches": [
+        "https://stackoverflow.com/*"
+      ],
+      "js": [
+        "content/stackoverflow.js"
+      ],
       "run_at": "document_idle"
     },
     {
@@ -68,7 +92,9 @@
         "https://docs.python.org/*",
         "https://nodejs.org/*"
       ],
-      "js": ["content/docs.js"],
+      "js": [
+        "content/docs.js"
+      ],
       "run_at": "document_idle"
     }
   ],
@@ -87,5 +113,11 @@
     "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["content/leetcode-inject.js"],
+      "matches": ["https://leetcode.com/*"]
+    }
+  ]
 }

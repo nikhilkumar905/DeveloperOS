@@ -8,6 +8,7 @@ module.exports = {
     popup: './src/popup/popup.tsx',
     'content/github': './src/content/github.ts',
     'content/leetcode': './src/content/leetcode.ts',
+    'content/leetcode-inject': './src/content/leetcode-inject.ts',
     'content/hackerrank': './src/content/hackerrank.ts',
     'content/codeforces': './src/content/codeforces.ts',
     'content/gfg': './src/content/gfg.ts',

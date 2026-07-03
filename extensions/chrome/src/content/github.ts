@@ -139,19 +139,22 @@ const observePushBanner = () => {
 // every SPA navigation.
 
 const hookHistoryNavigation = () => {
-  const originalPushState = history.pushState.bind(history);
-  history.pushState = function (state, title, url) {
-    originalPushState(state, title, url);
-    // Give DOM 400ms to render the new page before we inspect it
-    setTimeout(() => {
+  let lastHref = window.location.href;
+
+  // Content scripts cannot safely override history.pushState in the main world.
+  // We use a robust polling approach to detect SPA navigation changes.
+  setInterval(() => {
+    if (window.location.href !== lastHref) {
+      lastHref = window.location.href;
       pageEntryTime = Date.now();
       reportCurrentPage();
-    }, 400);
-  };
+    }
+  }, 1000);
 
   // Also hook popstate (browser back/forward)
   window.addEventListener('popstate', () => {
     setTimeout(() => {
+      lastHref = window.location.href;
       pageEntryTime = Date.now();
       reportCurrentPage();
     }, 400);
