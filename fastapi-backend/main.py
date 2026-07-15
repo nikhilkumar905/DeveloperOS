@@ -35,13 +35,13 @@ app = FastAPI(
 # This handles preflight OPTIONS requests properly with credentials.
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=(
-        r"http://localhost:\d+"          # all localhost ports
-        r"|https://localhost:\d+"        # https localhost
-        r"|chrome-extension://.*"        # Chrome extension
-        r"|moz-extension://.*"           # Firefox extension
-        r"|safari-web-extension://.*"    # Safari extension
-    ),
+    allow_origins=[
+        "http://localhost:6501",
+        "http://localhost:5173",
+        "http://127.0.0.1:6501",
+        "http://127.0.0.1:5173",
+    ],
+    allow_origin_regex=r"^(chrome|moz|safari-web)-extension://.*",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
@@ -81,9 +81,12 @@ async def health():
     }
 
 
-# ─── Global Error Handler ────────────────────────────────────────────────────
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    if isinstance(exc, StarletteHTTPException):
+        return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
     print(f"[server] Unhandled error: {exc}")
     return JSONResponse(status_code=500, content={"message": "An unexpected server error occurred"})
 

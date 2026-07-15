@@ -137,7 +137,7 @@ async def get_activity_feed(
     activities = await query.sort("-timestamp").skip((page - 1) * limit).limit(limit).to_list()
 
     return {
-        "activities": [a.model_dump(by_alias=True) for a in activities],
+        "activities": [{**a.model_dump(by_alias=True), "_id": str(a.id)} for a in activities],
         "pagination": {"page": page, "limit": limit, "total": total, "pages": -(-total // limit)},
     }
 
@@ -154,7 +154,7 @@ async def get_activity_summary(current_user: User = Depends(get_current_user)):
 
     recent = await ActivityLog.find(ActivityLog.user == uid).sort("-timestamp").limit(5).to_list()
     result = session.model_dump(by_alias=True)
-    result["recentActivity"] = [a.model_dump(by_alias=True) for a in recent]
+    result["recentActivity"] = [{**a.model_dump(by_alias=True), "_id": str(a.id)} for a in recent]
     return result
 
 
