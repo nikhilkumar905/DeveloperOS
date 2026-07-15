@@ -5,7 +5,11 @@ import mongoose from 'mongoose';
 /**
  * Format a Date to YYYY-MM-DD string in local time
  */
-const toDateString = (d: Date): string => d.toISOString().split('T')[0];
+const toDateString = (d: Date): string => {
+  const offset = d.getTimezoneOffset() * 60000;
+  const localDate = new Date(d.getTime() - offset);
+  return localDate.toISOString().split('T')[0];
+};
 
 /**
  * Computes a productivity score (0-100) from session data.
@@ -69,9 +73,10 @@ export const rebuildDailySession = async (
   userId: mongoose.Types.ObjectId,
   date: string
 ): Promise<void> => {
-  // Date range for the day (UTC)
-  const startOfDay = new Date(`${date}T00:00:00.000Z`);
-  const endOfDay = new Date(`${date}T23:59:59.999Z`);
+  // Date range for the day (adjusting for local timezone offset)
+  const offsetMs = new Date().getTimezoneOffset() * 60000;
+  const startOfDay = new Date(new Date(`${date}T00:00:00.000Z`).getTime() + offsetMs);
+  const endOfDay = new Date(new Date(`${date}T23:59:59.999Z`).getTime() + offsetMs);
 
   const logs: IActivityLog[] = await ActivityLog.find({
     user: userId,

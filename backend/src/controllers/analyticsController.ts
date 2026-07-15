@@ -30,7 +30,7 @@ export const getInsights = async (req: Request, res: Response) => {
     const githubStats = await GithubStats.findOne({ user: userId });
     const integrationProfile = await IntegrationProfile.findOne({ user: userId });
 
-    const calculatedData = calculateDeveloperIntelligence(githubStats, integrationProfile);
+    const calculatedData = await calculateDeveloperIntelligence(githubStats, integrationProfile);
 
     if (intelligence) {
       // Update existing
@@ -66,7 +66,7 @@ export const refreshInsights = async (req: Request, res: Response) => {
     const githubStats = await GithubStats.findOne({ user: userId });
     const integrationProfile = await IntegrationProfile.findOne({ user: userId });
 
-    const calculatedData = calculateDeveloperIntelligence(githubStats, integrationProfile);
+    const calculatedData = await calculateDeveloperIntelligence(githubStats, integrationProfile);
 
     let intelligence = await DeveloperIntelligence.findOne({ user: userId });
     const now = new Date();

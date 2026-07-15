@@ -3,6 +3,7 @@ import { IGithubStats, IGithubRepository } from '../models/GithubStats';
 import { IIntegrationProfile } from '../models/IntegrationProfile';
 import { IDeveloperIntelligence } from '../models/DeveloperIntelligence';
 import { IKnowledgeGraph } from '../models/KnowledgeGraph';
+import axios from 'axios';
 
 export interface IAtsAnalysisResult {
   score: number;
@@ -63,14 +64,14 @@ export const generateProjectBullets = (repo: IGithubRepository): string[] => {
   return bullets;
 };
 
-export const inferResumeData = (
+export const inferResumeData = async (
   user: any,
   githubStats: IGithubStats | null,
   integrationProfile: IIntegrationProfile | null,
   intelligence: IDeveloperIntelligence | null,
   graph: IKnowledgeGraph | null,
   targetRole: ResumeTemplateType = 'Software Engineer'
-): Partial<IResumeProfile> => {
+): Promise<Partial<IResumeProfile>> => {
   const fullName = user?.name || 'Developer Name';
   const email = user?.email || '';
 
@@ -137,14 +138,68 @@ export const inferResumeData = (
   // 2. Generate exactly 3 Best Projects
   const projects: IResumeProject[] = [];
   if (githubStats && githubStats.repositories.length > 0) {
-    // Sort repositories by overall quality, stars, forks, and technical richness
-    const sortedRepos = [...githubStats.repositories].sort((a, b) => {
-      const scoreA = a.stars * 10 + a.forks * 5 + (a.filePaths?.length || 0) + a.dependencies.length * 2;
-      const scoreB = b.stars * 10 + b.forks * 5 + (b.filePaths?.length || 0) + b.dependencies.length * 2;
-      return scoreB - scoreA;
-    }).slice(0, 3);
+    let selectedRepos: IGithubRepository[] = [];
+    
+    // Attempt to use Groq LLM to intelligently select the best 3 repos
+    try {
+      const groqKey = process.env.GROQ_API_KEY;
+      if (groqKey) {
+        const repoData = githubStats.repositories.map(r => ({
+          name: r.name,
+          description: r.description,
+          primary_language: r.language,
+          all_languages: r.languages,
+          stars: r.stars,
+          forks: r.forks,
+          dependencies: r.dependencies?.length || 0
+        }));
 
-    sortedRepos.forEach(repo => {
+        const prompt = `You are an expert technical recruiter evaluating a candidate for a ${targetRole} role. Here are their GitHub repositories: ${JSON.stringify(repoData)}.
+Your task is to select exactly the 3 BEST repositories that highlight complex, scalable, or highly relevant work.
+CRITICAL SELECTION CRITERIA:
+1. Prioritize full-stack, backend, AI, or complex architecture projects.
+2. Prioritize projects using TypeScript, Python, Node, Dockerfile, or system-level languages.
+3. Strongly penalize and avoid simple frontend-only projects (especially those where the primary language is just HTML/CSS) unless there are no other options.
+4. If a project name implies a complex system (e.g. "OS", "Translator", "Platform", "Management", "API"), prioritize it over basic websites.
+
+CRITICAL INSTRUCTION: You MUST select EXACTLY 3 names from the provided JSON list. Do not hallucinate or invent project names (e.g., do not output "TypeScript" or "Node" as a project name).
+
+Output ONLY a valid JSON object with a single key "projects" containing an array of strings. Example: {"projects": ["exact_name_1", "exact_name_2", "exact_name_3"]}`;
+
+        const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
+          model: 'llama-3.1-8b-instant',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.1,
+          response_format: { type: "json_object" }
+        }, {
+          headers: {
+            'Authorization': `Bearer ${groqKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        let content = response.data.choices[0].message.content.trim();
+        const parsed = JSON.parse(content);
+        const selectedNames: string[] = parsed.projects || [];
+        
+        if (Array.isArray(selectedNames) && selectedNames.length > 0) {
+          selectedRepos = githubStats.repositories.filter(r => selectedNames.includes(r.name)).slice(0, 3);
+        }
+      }
+    } catch (error) {
+      console.warn('Groq LLM project selection failed, falling back to static heuristic.', error);
+    }
+
+    // Fallback static heuristic if LLM failed, isn't configured, or returned invalid data
+    if (selectedRepos.length < 3) {
+      selectedRepos = [...githubStats.repositories].sort((a, b) => {
+        const scoreA = a.stars * 10 + a.forks * 5 + (a.filePaths?.length || 0) + a.dependencies.length * 2;
+        const scoreB = b.stars * 10 + b.forks * 5 + (b.filePaths?.length || 0) + b.dependencies.length * 2;
+        return scoreB - scoreA;
+      }).slice(0, 3);
+    }
+
+    selectedRepos.forEach(repo => {
       projects.push({
         name: repo.name,
         description: repo.description || `Full-stack application built with ${repo.language || 'modern technologies'}.`,

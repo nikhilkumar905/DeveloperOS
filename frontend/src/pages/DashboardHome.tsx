@@ -5,6 +5,8 @@ import { Github, Code2, GitBranch, Bell, Calendar, Plus, CheckCircle2, AlertCirc
 import CreateGoalModal from '../components/CreateGoalModal';
 import { WidgetRegistry } from '../components/WidgetRegistry';
 import ActivityWidget from '../components/ActivityWidget';
+import PerformanceChartWidget from '../components/PerformanceChartWidget';
+import ActivityHeatmapWidget from '../components/ActivityHeatmapWidget';
 import { API_BASE_URL } from '../lib/api';
 import './DashboardHome.css';
 
@@ -58,19 +60,21 @@ const DashboardHome: React.FC = () => {
     if (!token) return;
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const [statsRes, goalsRes, notifyRes, timelineRes] = await Promise.all([
+      
+      const results = await Promise.allSettled([
         axios.get(`${API_BASE_URL}/api/dashboard/stats`, config),
         axios.get(`${API_BASE_URL}/api/dashboard/goals`, config),
         axios.get(`${API_BASE_URL}/api/dashboard/notifications`, config),
         axios.get(`${API_BASE_URL}/api/dashboard/timeline`, config)
       ]);
 
-      setStats(statsRes.data);
-      setGoals(goalsRes.data);
-      setNotifications(notifyRes.data);
-      setTimeline(timelineRes.data);
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err);
+      if (results[0].status === 'fulfilled') setStats(results[0].value.data);
+      if (results[1].status === 'fulfilled') setGoals(results[1].value.data);
+      if (results[2].status === 'fulfilled') setNotifications(results[2].value.data);
+      if (results[3].status === 'fulfilled') setTimeline(results[3].value.data);
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
     }
@@ -81,6 +85,20 @@ const DashboardHome: React.FC = () => {
       fetchDashboardData();
     }
   }, [token, fetchDashboardData]);
+
+  // Listen for background auto-sync completion to refresh UI automatically
+  useEffect(() => {
+    const handleSync = () => {
+      fetchDashboardData();
+    };
+
+    window.addEventListener('personalos-sync-complete', handleSync);
+    window.addEventListener('personalos-integration-updated', handleSync);
+    return () => {
+      window.removeEventListener('personalos-sync-complete', handleSync);
+      window.removeEventListener('personalos-integration-updated', handleSync);
+    };
+  }, [fetchDashboardData, isAuthLoading]);
 
   const handleCreateGoal = async (goalData: { title: string; targetValue: number; unit: string; deadline: string }) => {
     if (!token) return;
@@ -147,7 +165,7 @@ const DashboardHome: React.FC = () => {
           </div>
           <div className="stats-info">
             <div className="stats-label">Active Projects</div>
-            <div className="stats-value">{stats?.activeProjectsCount}</div>
+            <div className="stats-value">{stats?.activeProjectsCount || 0}</div>
           </div>
         </div>
       </div>
@@ -217,7 +235,7 @@ const DashboardHome: React.FC = () => {
                     <div className="notification-details">
                       <p>{n.message}</p>
                       {!n.read && (
-                        <button className="mark-read-btn" onClick={() => handleMarkAsRead(n._id)}>Mark as read</button>
+                         <button className="mark-read-btn" onClick={() => handleMarkAsRead(n._id)}>Mark as read</button>
                       )}
                     </div>
                   </div>
@@ -225,6 +243,9 @@ const DashboardHome: React.FC = () => {
               )}
             </div>
           </div>
+          
+          <PerformanceChartWidget />
+          <ActivityWidget />
         </div>
 
         {/* Right Side: Activity Timeline */}
@@ -232,6 +253,10 @@ const DashboardHome: React.FC = () => {
           {WidgetRegistry.filter(w => w.region !== 'full').map(Widget => (
             <Widget.component key={Widget.id} />
           ))}
+          
+          <div style={{ marginTop: '1.25rem' }}>
+            <ActivityHeatmapWidget />
+          </div>
           
           <div className="card widget-box timeline-widget" style={{ marginTop: '1.25rem' }}>
             <div className="widget-header">
@@ -258,9 +283,6 @@ const DashboardHome: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Activity Widget — Full Width */}
-      <ActivityWidget />
 
       <CreateGoalModal
         isOpen={isGoalModalOpen}

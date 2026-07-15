@@ -22,7 +22,7 @@ export const getResumeProfile = async (req: Request, res: Response): Promise<voi
       const intelligence = await DeveloperIntelligence.findOne({ user: userId });
       const graph = await KnowledgeGraph.findOne({ user: userId });
 
-      const inferred = inferResumeData(user, githubStats, integrationProfile, intelligence, graph, 'Software Engineer');
+      const inferred = await inferResumeData(user, githubStats, integrationProfile, intelligence, graph, 'Software Engineer');
       const atsResult = analyzeAtsCompatibility(inferred as any, 'Software Engineer');
 
       profile = await ResumeProfile.create({
@@ -82,7 +82,7 @@ export const inferResume = async (req: Request, res: Response): Promise<void> =>
     const intelligence = await DeveloperIntelligence.findOne({ user: userId });
     const graph = await KnowledgeGraph.findOne({ user: userId });
 
-    const inferred = inferResumeData(user, githubStats, integrationProfile, intelligence, graph, targetRole as ResumeTemplateType);
+    const inferred = await inferResumeData(user, githubStats, integrationProfile, intelligence, graph, targetRole as ResumeTemplateType);
     const atsResult = analyzeAtsCompatibility(inferred as any, targetRole as ResumeTemplateType);
 
     let profile = await ResumeProfile.findOne({ user: userId });

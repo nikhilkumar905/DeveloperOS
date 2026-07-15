@@ -80,7 +80,7 @@ const ACTIVITY_LABELS: Record<string, string> = {
 
 const DEFAULT_SETTINGS: ExtensionSettings = {
   token: '',
-  backendUrl: 'http://localhost:6500',
+  backendUrl: 'http://127.0.0.1:6500',
   platforms: {
     github: true,
     leetcode: true,
@@ -131,7 +131,8 @@ const Popup: React.FC = () => {
   const loadTodayStats = useCallback(async () => {
     if (!settings.token) return;
     try {
-      const res = await fetch(`${settings.backendUrl}/api/activity/summary`, {
+      const fetchUrl = settings.backendUrl.replace('localhost', '127.0.0.1') + '/api/activity/summary';
+      const res = await fetch(fetchUrl, {
         headers: { Authorization: `Bearer ${settings.token}` },
       });
       if (res.ok) {
@@ -141,7 +142,10 @@ const Popup: React.FC = () => {
           problemsSolved: data.problemsSolved,
           streak: data.streak,
         });
-        setRecentActivity(data.recentActivity || []);
+        // Load local UI history from extension storage
+        chrome.storage.local.get('local_history', (result) => {
+          setRecentActivity(result['local_history'] || []);
+        });
       }
     } catch (_) { }
   }, [settings.token, settings.backendUrl]);
@@ -175,19 +179,12 @@ const Popup: React.FC = () => {
     setRecentActivity([]);
   };
 
-  // ── Clear Account History ──
+  // ── Clear Local Extension History ──
   const handleClearHistory = async () => {
-    if (!settings.token) return;
-    try {
-      await fetch(`${settings.backendUrl}/api/activity/logs`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${settings.token}` },
-      });
-      setRecentActivity([]);
-      setTodayStats({ totalTimeMs: 0, problemsSolved: 0, streak: 0 });
-      setMessage({ text: 'History cleared!', type: 'success' });
-      setTimeout(() => setMessage(null), 2000);
-    } catch (_) { }
+    await chrome.storage.local.set({ 'local_history': [] });
+    setRecentActivity([]);
+    setMessage({ text: 'Local UI history cleared!', type: 'success' });
+    setTimeout(() => setMessage(null), 2000);
   };
 
   // ── Toggle platform ──
@@ -311,14 +308,13 @@ const Popup: React.FC = () => {
                   <div className="stat-label">Day Streak</div>
                 </div>
               </div>
-
               {/* Recent Activity */}
               <div>
-                <div className="section-title">Recent Activity</div>
+                <div className="section-title">Local Recent Activity</div>
                 <div className="recent-list">
                   {recentActivity.length === 0 ? (
                     <div style={{ fontSize: 11, color: '#475569', padding: '8px 0' }}>
-                      No activity tracked yet today. Browse GitHub, LeetCode, or Stack Overflow to start!
+                      No activity tracked in this session.
                     </div>
                   ) : (
                     recentActivity.slice(0, 5).map((a: any, i: number) => (

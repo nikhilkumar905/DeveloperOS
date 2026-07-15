@@ -15,6 +15,7 @@
 - **🧠 Developer Intelligence Engine**: Evaluates your GitHub contributions and coding habits to calculate comprehensive interview readiness, consistency scores, and actionable career roadmaps.
 - **📄 AI Resume Studio**: Instantly generates tailored, ATS-optimized resumes in high-resolution PDF format using real-time insights from your repositories.
 - **🌐 Automated Portfolio Generator**: Preview and export fully customized, responsive personal portfolio websites in 4 curated themes (`modern-dark`, `minimal-light`, `cyberpunk`, `glassmorphism`) as ready-to-deploy ZIP bundles.
+- **🤖 AI Assistant & Chat Service**: Features a built-in chatbot with Retrieval-Augmented Generation (RAG) that answers questions regarding your GitHub repositories, technologies, skills, and code structure, dynamically extracting framework references from project files.
 - **🔒 Privacy-First Security**: Built with strict JWT authentication, Helmet HTTP header protection, rate limiting, and centralized CORS controls.
 
 ---
@@ -27,6 +28,7 @@
 | **Backend** | Node.js, Express 5, TypeScript, MongoDB (Mongoose 9), PDFKit |
 | **Security** | Helmet, Compression, Express Rate Limit, JWT, bcryptjs |
 | **Extension** | Chromium Manifest V3, Webpack 5, TypeScript |
+| **AI / Chat** | Python 3, FastAPI, LangChain, ChromaDB, HuggingFace Embeddings, Groq |
 | **DevOps** | Multi-stage Docker, Docker Compose, Nginx, GitHub Actions CI/CD |
 
 ---
@@ -94,6 +96,7 @@ To load in Chrome/Edge:
 ```
 DeveloperOS/
 ├── backend/               # Express 5 REST API & Intelligence Engines
+├── chat-service/          # Python FastAPI RAG Engine & AI Assistant
 ├── frontend/              # Vite React 19 SPA Dashboard
 ├── extensions/
 │   └── chrome/            # Manifest V3 Automatic Activity Tracker

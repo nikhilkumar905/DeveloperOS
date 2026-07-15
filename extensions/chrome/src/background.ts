@@ -12,6 +12,7 @@ import { ActivityEvent, ExtensionSettings, MessageType } from './types';
 
 const BUFFER_KEY = 'activity_buffer';
 const SETTINGS_KEY = 'extension_settings';
+const LOCAL_HISTORY_KEY = 'local_history';
 const FLUSH_ALARM = 'flush_activity_buffer';
 const FLUSH_INTERVAL_MINUTES = 1;
 
@@ -19,7 +20,7 @@ const FLUSH_INTERVAL_MINUTES = 1;
 
 const DEFAULT_SETTINGS: ExtensionSettings = {
   token: '',
-  backendUrl: 'http://localhost:6500',
+  backendUrl: 'http://127.0.0.1:6500',
   platforms: {
     github: true,
     leetcode: true,
@@ -55,6 +56,14 @@ async function addToBuffer(event: ActivityEvent): Promise<void> {
   // Cap buffer at 500 events to prevent excessive storage use
   const capped = buffer.slice(-500);
   await chrome.storage.local.set({ [BUFFER_KEY]: capped });
+
+  // Add meaningful events to local UI history so popup can display them
+  if (['repo_push', 'repo_commit_view', 'problem_solved', 'problem_attempted'].includes(event.activityType)) {
+    const histResult = await chrome.storage.local.get(LOCAL_HISTORY_KEY);
+    const history = histResult[LOCAL_HISTORY_KEY] || [];
+    history.unshift(event);
+    await chrome.storage.local.set({ [LOCAL_HISTORY_KEY]: history.slice(0, 10) });
+  }
 }
 
 async function clearBuffer(): Promise<void> {
@@ -82,7 +91,10 @@ async function flushBuffer(): Promise<number> {
   }
 
   try {
-    const response = await fetch(`${settings.backendUrl}/api/activity/log`, {
+    // Automatically rewrite localhost to 127.0.0.1 to avoid Chrome IPv6 resolution failures on existing installs
+    const fetchUrl = settings.backendUrl.replace('localhost', '127.0.0.1') + '/api/activity/log';
+    
+    const response = await fetch(fetchUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -91,6 +91,7 @@ const GithubStatsWidget: React.FC = () => {
       });
       setIsConnected(false);
       setStats(null);
+      window.dispatchEvent(new Event('personalos-integration-updated'));
     } catch (err) {
       console.error(err);
       setError('Failed to disconnect.');
@@ -105,6 +106,7 @@ const GithubStatsWidget: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(res.data);
+      window.dispatchEvent(new Event('personalos-integration-updated'));
     } catch (err) {
       console.error(err);
       setError('Failed to sync data.');

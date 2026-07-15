@@ -74,6 +74,7 @@ const LeetCodeStatsWidget: React.FC = () => {
       setStatsData({ username: usernameInput.trim(), stats: res.data });
       setIsConnected(true);
       setError(null);
+      window.dispatchEvent(new Event('personalos-integration-updated'));
     } catch (err: any) {
       console.error(err);
       setError(err.response?.data?.message || 'Failed to connect LeetCode account.');
@@ -91,6 +92,7 @@ const LeetCodeStatsWidget: React.FC = () => {
       setIsConnected(false);
       setStatsData(null);
       setUsernameInput('');
+      window.dispatchEvent(new Event('personalos-integration-updated'));
     } catch (err) {
       console.error(err);
       setError('Failed to disconnect.');
@@ -208,7 +210,7 @@ const LeetCodeStatsWidget: React.FC = () => {
               {stats.recentActivity.map((activity, idx) => (
                 <div key={idx} className="recent-item">
                   <span className="recent-title">{activity.title}</span>
-                  <span className="recent-date">{new Date(activity.date).toLocaleDateString()}</span>
+                  <span className="recent-date">{new Date(parseInt(activity.date)).toLocaleDateString()}</span>
                 </div>
               ))}
             </div>

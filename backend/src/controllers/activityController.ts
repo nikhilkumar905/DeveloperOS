@@ -5,7 +5,11 @@ import { ActivitySession } from '../models/ActivitySession';
 import IntegrationProfile from '../models/IntegrationProfile';
 import { rebuildDailySession, calculateStreak } from '../services/activityAggregator';
 
-const toDateString = (d: Date): string => d.toISOString().split('T')[0];
+const toDateString = (d: Date): string => {
+  const offset = d.getTimezoneOffset() * 60000;
+  const localDate = new Date(d.getTime() - offset);
+  return localDate.toISOString().split('T')[0];
+};
 
 /**
  * POST /api/activity/log
@@ -92,6 +96,20 @@ export const getActivityFeed = async (req: Request, res: Response): Promise<void
 
     const filter: any = { user: userId };
     if (platform && platform !== 'all') filter.platform = platform;
+    
+    // Add date filtering if provided (YYYY-MM-DD)
+    if (req.query.date) {
+      const dateStr = req.query.date as string;
+      const offsetMs = new Date().getTimezoneOffset() * 60000;
+      const startOfDay = new Date(new Date(`${dateStr}T00:00:00.000Z`).getTime() + offsetMs);
+      const endOfDay = new Date(new Date(`${dateStr}T23:59:59.999Z`).getTime() + offsetMs);
+      filter.timestamp = { $gte: startOfDay, $lte: endOfDay };
+    }
+    
+    // Only show meaningful action events in the feed, not passive views
+    filter.activityType = { 
+      $in: ['repo_push', 'repo_commit_view', 'problem_solved', 'problem_attempted', 'contest_participated', 'pr_view', 'issue_view'] 
+    };
 
     const [activities, total] = await Promise.all([
       ActivityLog.find(filter)
@@ -148,8 +166,11 @@ export const getActivitySummary = async (req: Request, res: Response): Promise<v
       return;
     }
 
-    // Get last 5 activity items for quick display
-    const recentActivity = await ActivityLog.find({ user: userId })
+    // Get last 5 meaningful activity items for quick display
+    const recentActivity = await ActivityLog.find({ 
+      user: userId,
+      activityType: { $in: ['repo_push', 'repo_commit_view', 'problem_solved', 'problem_attempted', 'contest_participated', 'pr_view', 'issue_view'] }
+    })
       .sort({ timestamp: -1 })
       .limit(5)
       .lean();

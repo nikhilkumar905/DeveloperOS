@@ -23,7 +23,8 @@
     "https://nextjs.org/*",
     "https://docs.python.org/*",
     "https://nodejs.org/*",
-    "http://localhost:6500/*"
+    "http://localhost:6500/*",
+    "http://127.0.0.1:6500/*"
   ],
   "background": {
     "service_worker": "background.js",

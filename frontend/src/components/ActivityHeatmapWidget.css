@@ -1,0 +1,109 @@
+.heatmap-widget {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.heatmap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.heatmap-header h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-main);
+}
+
+.heatmap-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.heatmap-grid {
+  display: flex;
+  gap: 4px;
+}
+
+.heatmap-week {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.heatmap-day {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background-color: var(--bg-color);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.1s, border-color 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+.heatmap-day:hover {
+  transform: scale(1.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  z-index: 10;
+}
+
+/* Activity Levels - Green/Indigo scale */
+.heatmap-day.level-0 { background-color: rgba(255, 255, 255, 0.03); }
+.heatmap-day.level-1 { background-color: rgba(99, 102, 241, 0.3); }
+.heatmap-day.level-2 { background-color: rgba(99, 102, 241, 0.5); }
+.heatmap-day.level-3 { background-color: rgba(99, 102, 241, 0.7); }
+.heatmap-day.level-4 { background-color: rgba(99, 102, 241, 1); }
+
+.heatmap-months {
+  display: flex;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-left: 20px; /* Offset for day labels */
+  margin-bottom: 4px;
+}
+
+.heatmap-month-label {
+  /* We will dynamically calculate width based on how many weeks fall into this month */
+}
+
+.heatmap-y-axis {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  justify-content: space-between;
+  padding-right: 8px;
+}
+
+.heatmap-y-label {
+  height: 14px;
+  line-height: 14px;
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+.heatmap-legend-item {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
