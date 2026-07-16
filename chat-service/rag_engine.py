@@ -32,7 +32,7 @@ Answer:"""
 prompt = PromptTemplate.from_template(template)
 
 def format_docs(docs):
-    return "\n\n".join(doc.page_content for doc in docs)
+    return "\n\n".join(doc.page_content[:1000] for doc in docs)
 
 def build_rag_chain():
     llm = get_llm()
@@ -46,4 +46,12 @@ def build_rag_chain():
 
 def ingest_documents(docs):
     if len(docs) > 0:
+        try:
+            vectorstore.delete_collection()
+        except:
+            pass
+        # Re-initialize after deletion
+        global vectorstore, retriever
+        vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
         vectorstore.add_documents(documents=docs)
