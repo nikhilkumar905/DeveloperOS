@@ -25,33 +25,36 @@ def prepare_documents(data: dict) -> list[Document]:
     if gh and gh.get("repositories"):
         for repo in gh["repositories"]:
             desc = repo.get("description", "No description")
-            langs = ", ".join(repo.get("languages", []))
-            deps = ", ".join(repo.get("dependencies", []))
-            file_paths = ", ".join(repo.get("filePaths", []))
+            langs = ", ".join(repo.get("languages") or [])
+            deps = ", ".join(repo.get("dependencies") or [])
+            file_paths = ", ".join(repo.get("filePaths") or [])
             text = f"Repository name: {repo.get('name')}. Description: {desc}. Primary Language: {repo.get('language')}. All Languages used: {langs}. Dependencies and libraries used: {deps}. Structural files available in the repository (e.g. package.json, requirements.txt, README.md): {file_paths}. Stars: {repo.get('stars')}. URL: {repo.get('url')}"
-            docs.append(Document(page_content=text, metadata={"source": "github", "type": "repository", "name": repo.get("name")}))
+            metadata = {"source": "github", "type": "repository", "name": repo.get("name") or "Unknown"}
+            docs.append(Document(page_content=text, metadata=metadata))
 
     # 3. Resume Profile
     resume = data.get("resume")
     if resume:
         # Experience
-        for exp in resume.get("experience", []):
-            text = f"Work Experience: {exp.get('role')} at {exp.get('company')}. Duration: {exp.get('startDate')} to {exp.get('endDate')}. Description: {exp.get('description')}. Technologies used: {', '.join(exp.get('technologies', []))}"
-            docs.append(Document(page_content=text, metadata={"source": "resume", "type": "experience", "company": exp.get('company')}))
+        for exp in resume.get("experience") or []:
+            text = f"Work Experience: {exp.get('role')} at {exp.get('company')}. Duration: {exp.get('startDate')} to {exp.get('endDate')}. Description: {exp.get('description')}. Technologies used: {', '.join(exp.get('technologies') or [])}"
+            metadata = {"source": "resume", "type": "experience", "company": exp.get('company') or "Unknown"}
+            docs.append(Document(page_content=text, metadata=metadata))
         # Projects
-        for proj in resume.get("projects", []):
-            text = f"Project name: {proj.get('name')}. Description: {proj.get('description')}. Technologies used: {', '.join(proj.get('technologies', []))}"
-            docs.append(Document(page_content=text, metadata={"source": "resume", "type": "project", "name": proj.get("name")}))
+        for proj in resume.get("projects") or []:
+            text = f"Project name: {proj.get('name')}. Description: {proj.get('description')}. Technologies used: {', '.join(proj.get('technologies') or [])}"
+            metadata = {"source": "resume", "type": "project", "name": proj.get("name") or "Unknown"}
+            docs.append(Document(page_content=text, metadata=metadata))
         # Skills
-        skills_data = resume.get("skills", {})
+        skills_data = resume.get("skills") or {}
         if isinstance(skills_data, dict):
             for category, items in skills_data.items():
                 if isinstance(items, list):
-                    text = f"I am skilled in {category}: {', '.join(items)}"
+                    text = f"I am skilled in {category}: {', '.join(items or [])}"
                     docs.append(Document(page_content=text, metadata={"source": "resume", "type": "skill"}))
         elif isinstance(skills_data, list):
             for skill in skills_data:
-                text = f"I am skilled in {skill.get('category')}: {', '.join(skill.get('items', []))}"
+                text = f"I am skilled in {skill.get('category')}: {', '.join(skill.get('items') or [])}"
                 docs.append(Document(page_content=text, metadata={"source": "resume", "type": "skill"}))
 
     # 4. Knowledge Graph
