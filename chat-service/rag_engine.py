@@ -9,7 +9,7 @@ from langchain_core.output_parsers import StrOutputParser
 # Setup components
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
-retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
+retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
 
 def get_llm():
     # Will throw if GROQ_API_KEY is not in env
