@@ -39,7 +39,7 @@ export const ChatWidget: React.FC = () => {
 
     try {
       // Send to FastAPI Chat Service
-      const res = await axios.post('http://127.0.0.1:8000/api/chat', { message: userMsg.text });
+      const res = await axios.post('http://localhost:8000/api/chat', { message: userMsg.text });
       const botMsg: Message = { id: (Date.now() + 1).toString(), sender: 'bot', text: res.data.response };
       setMessages(prev => [...prev, botMsg]);
     } catch (error) {
@@ -55,7 +55,7 @@ export const ChatWidget: React.FC = () => {
     if (!user) return;
     setIndexing(true);
     try {
-      const res = await axios.post('http://127.0.0.1:8000/api/index', { user_id: user._id });
+      const res = await axios.post('http://localhost:8000/api/index', { user_id: user._id });
       setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'bot', text: `Successfully indexed ${res.data.indexed_documents} documents from your profile!` }]);
     } catch (error) {
       console.error('Index error:', error);
