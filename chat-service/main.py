@@ -57,7 +57,12 @@ async def get_user_id(credentials: Optional[HTTPAuthorizationCredentials] = Depe
         raise UNAUTHORIZED
     if payload.get("type") != "access" or not payload.get("sub"):
         raise UNAUTHORIZED
-    user = await get_auth_user(payload["sub"])
+    try:
+        user = await get_auth_user(payload["sub"])
+    except Exception as e:
+        # Raised as an HTTPException so the response still carries CORS headers and a clear message
+        print(f"[chat-service] database error while authenticating: {e}")
+        raise HTTPException(status_code=503, detail="The chat service can't reach the database right now. Please try again.")
     if not user or user.get("tokenVersion", 0) != payload.get("tv") or user.get("emailVerified", True) is False:
         raise UNAUTHORIZED
     return payload["sub"]

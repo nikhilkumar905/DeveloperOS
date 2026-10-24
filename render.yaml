@@ -56,8 +56,8 @@ services:
   - type: web
     name: developeros-chat
     runtime: docker
-    # The chat service uses ~400 MB of RAM at rest; if Render reports "out of memory" on the free
-    # plan, move this service to a plan with more memory.
+    # Embeddings run on ONNX Runtime: ~110 MB at rest, ~270 MB peak while indexing a profile,
+    # which fits the free plan's 512 MB.
     plan: free
     region: singapore
     dockerContext: ./chat-service

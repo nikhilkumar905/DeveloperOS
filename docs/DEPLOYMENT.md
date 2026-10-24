@@ -54,7 +54,7 @@ You only enter secrets, DNS records and the OAuth settings.
    | api | `SMTP_FROM` | `PersonalOS <your-address@gmail.com>` |
 
    Already set for you: `APP_ENV=production`, `FRONTEND_URL=https://developeros.page`, the Google and GitHub callback URLs, `SMTP_HOST`/`SMTP_PORT`, and a random `JWT_SECRET` shared by both services.
-4. Click **Apply**. The first build takes about 5 minutes for the API and 10–15 minutes for the chat service (its image includes PyTorch).
+4. Click **Apply**. The first build takes about 5 minutes for the API and about 10 minutes for the chat service.
 5. When both are **Live**, check the temporary addresses Render gave them:
    - `https://developeros-api.onrender.com/api/health` → `{"status":"OK", …}`
    - `https://developeros-chat.onrender.com/api/health` → `{"status":"OK","service":"chat"}`
@@ -165,7 +165,7 @@ Put its client ID and secret into **developeros-api → Environment** on Render.
 ## Good to know
 
 - **Render free services sleep** after ~15 minutes without traffic. The first request afterwards can take up to a minute, so just retry. Paid Render plans stay awake.
-- **Chat service memory.** It uses ~400 MB at rest on Render's 512 MB free instance. If its logs show *out of memory* or restarts, move **developeros-chat** to a plan with more RAM.
+- **Chat service memory.** It uses ~110 MB at rest and peaks around 270 MB while indexing a profile, well within Render's 512 MB free instance.
 - **The vector index is rebuilt automatically.** On the free plan the chat service's disk is temporary, but after a restart the index is rebuilt from MongoDB on the next question.
 - **Updates deploy automatically.** Pushing to `main` redeploys Vercel and both Render services.
 - **Email from your own domain** (e.g. `no-reply@developeros.page`) needs an email provider that supports custom domains (Brevo, SendGrid, Zoho, Google Workspace…). Put its SMTP settings into the `SMTP_*` variables on Render.
@@ -180,5 +180,6 @@ Put its client ID and secret into **developeros-api → Environment** on Render.
 | Google: `redirect_uri_mismatch` | The redirect URI in Google Cloud must be exactly `https://api.developeros.page/api/auth/google/callback`. |
 | Google: *Access blocked* | Add your account as a test user, or publish the app. |
 | Sign-up says email isn't configured (503) | Set `SMTP_USER`, `SMTP_PASSWORD` and `SMTP_FROM` on **developeros-api**; production requires them. |
+| Browser console: *blocked by CORS policy* on `chat.developeros.page` | Usually the chat service crashed, restarted or was waking up, and Render answered with its own error page, which has no CORS header. Check **developeros-chat → Logs**, then retry. If the logs show *out of memory*, make sure you've deployed the latest version (ONNX embeddings). |
 | Chatbot can't reach the chat service | Check https://chat.developeros.page/api/health and that `VITE_CHAT_API_URL` is `https://chat.developeros.page`. |
 | MongoDB errors in Render logs | Atlas Network Access must include `0.0.0.0/0`; check the user, password and URL-encoding in `MONGO_URI`. |
