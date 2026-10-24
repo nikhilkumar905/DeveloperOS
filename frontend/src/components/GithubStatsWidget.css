@@ -180,7 +180,6 @@
 
 .repo-item:hover {
   border-color: var(--primary-color);
-  transform: translateY(-1px);
 }
 
 .repo-name {

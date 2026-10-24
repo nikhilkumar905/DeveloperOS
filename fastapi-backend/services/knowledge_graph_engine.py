@@ -212,34 +212,44 @@ def build_knowledge_graph(github_stats, integration_profile) -> Dict[str, Any]:
             if (node.properties or {}).get("confidence", 0) > 30:
                 add_edge(USER_ID, node.id, "HAS_SKILL")
 
-    if integration_profile and integration_profile.leetcodeStats:
+    lc = integration_profile.leetcodeStats if integration_profile and integration_profile.leetcodeUsername else None
+    gfg = integration_profile.gfgStats if integration_profile and integration_profile.gfgUsername else None
+
+    if lc or gfg:
         dsa_id = "skill:Data Structures & Algorithms"
         domain_id = "domain:Computer Science"
+        verified_by = " and ".join(name for name, stats in (("LeetCode", lc), ("GeeksforGeeks", gfg)) if stats)
         add_node(GraphNode(id=dsa_id, label="Data Structures & Algorithms", type="Skill",
-                           properties={"confidence": 90, "reason": "Verified via LeetCode stats"}))
+                           properties={"confidence": 90, "reason": f"Verified via {verified_by} stats"}))
         add_node(GraphNode(id=domain_id, label="Computer Science", type="Domain",
                            properties={"confidence": 85}))
         add_edge(USER_ID, dsa_id, "HAS_SKILL")
         add_edge(dsa_id, domain_id, "BELONGS_TO")
         add_edge(USER_ID, domain_id, "HAS_SKILL")
 
-        stats = integration_profile.leetcodeStats
-        if stats.solvedEasy > 0:
+        easy = (lc.solvedEasy if lc else 0) + (gfg.solvedSchool + gfg.solvedBasic + gfg.solvedEasy if gfg else 0)
+        medium = (lc.solvedMedium if lc else 0) + (gfg.solvedMedium if gfg else 0)
+        hard = (lc.solvedHard if lc else 0) + (gfg.solvedHard if gfg else 0)
+        if easy > 0:
             add_node(GraphNode(id="topic:Basic Algorithms", label="Basic Algorithms", type="Topic",
-                               properties={"confidence": 100}))
+                               properties={"confidence": 100, "solved": easy}))
             add_edge(dsa_id, "topic:Basic Algorithms", "IMPROVES")
-        if stats.solvedMedium > 0:
+        if medium > 0:
             add_node(GraphNode(id="topic:Intermediate Algorithms", label="Intermediate Algorithms", type="Topic",
-                               properties={"confidence": 80}))
+                               properties={"confidence": 80, "solved": medium}))
             add_edge(dsa_id, "topic:Intermediate Algorithms", "IMPROVES")
-        if stats.solvedHard > 0:
+        if hard > 0:
             add_node(GraphNode(id="topic:Advanced Algorithms", label="Advanced Algorithms", type="Topic",
-                               properties={"confidence": 70}))
+                               properties={"confidence": 70, "solved": hard}))
             add_edge(dsa_id, "topic:Advanced Algorithms", "IMPROVES")
-        if stats.badges > 0:
+        if lc and lc.badges > 0:
             add_node(GraphNode(id="achievement:LeetCode Badges", label="LeetCode Badges", type="Achievement",
                                properties={"confidence": 100}))
             add_edge("achievement:LeetCode Badges", dsa_id, "RELATED_TO")
+        if gfg and gfg.codingScore > 0:
+            add_node(GraphNode(id="achievement:GeeksforGeeks Coding Score", label=f"GFG Coding Score {gfg.codingScore}",
+                               type="Achievement", properties={"confidence": 100}))
+            add_edge("achievement:GeeksforGeeks Coding Score", dsa_id, "RELATED_TO")
 
     return {"nodes": list(nodes.values()), "edges": edges}
 

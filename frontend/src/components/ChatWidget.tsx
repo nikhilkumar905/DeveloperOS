@@ -2,16 +2,22 @@ import React, { useState, useRef, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { MessageSquare, Send, X, Bot, User, RefreshCw } from 'lucide-react';
+import { CHAT_API_URL, getErrorMessage } from '../lib/api';
 import './ChatWidget.css';
 
 interface Message {
   id: string;
   sender: 'user' | 'bot';
   text: string;
+  sources?: string[];
+  // Status/error messages are shown but not sent back to the model as conversation history
+  isStatus?: boolean;
 }
 
+const HISTORY_TURNS = 6;
+
 export const ChatWidget: React.FC = () => {
-  const { user } = useContext(AuthContext);
+  const { token, getValidToken } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { id: '1', sender: 'bot', text: "Hi! I'm your DeveloperOS AI. I can answer questions about your skills, projects, weaknesses, and GitHub stats. What would you like to know?" }
@@ -29,37 +35,50 @@ export const ChatWidget: React.FC = () => {
     scrollToBottom();
   }, [messages, isOpen]);
 
+  // Separate axios instance: a 401 from the chat service must not trigger the global logout interceptor
+  const chatRequest = async (path: string, body: object) => {
+    const fresh = await getValidToken();
+    return axios.create().post(`${CHAT_API_URL}${path}`, body, { headers: { Authorization: `Bearer ${fresh}` } });
+  };
+
+  const chatErrorText = (error: any, fallback: string) =>
+    error?.response ? getErrorMessage(error, fallback) : `Sorry, I couldn't reach the chat service at ${CHAT_API_URL}. Is it running?`;
+
   const handleSend = async () => {
-    if (!input.trim()) return;
-    
-    const userMsg: Message = { id: Date.now().toString(), sender: 'user', text: input };
+    const text = input.trim();
+    if (!text || loading || !token) return;
+
+    const history = messages
+      .filter(m => !m.isStatus && m.id !== '1')
+      .slice(-HISTORY_TURNS)
+      .map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text }));
+
+    const userMsg: Message = { id: Date.now().toString(), sender: 'user', text };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setLoading(true);
 
     try {
-      // Send to FastAPI Chat Service
-      const res = await axios.post('http://localhost:8000/api/chat', { message: userMsg.text });
-      const botMsg: Message = { id: (Date.now() + 1).toString(), sender: 'bot', text: res.data.response };
+      const res = await chatRequest('/api/chat', { message: text, history });
+      const botMsg: Message = { id: (Date.now() + 1).toString(), sender: 'bot', text: res.data.response, sources: res.data.sources };
       setMessages(prev => [...prev, botMsg]);
     } catch (error) {
       console.error('Chat error:', error);
-      const errorMsg: Message = { id: (Date.now() + 1).toString(), sender: 'bot', text: "Sorry, I couldn't reach the chat service. Is the FastAPI server running on port 8000?" };
-      setMessages(prev => [...prev, errorMsg]);
+      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), sender: 'bot', text: chatErrorText(error, 'Something went wrong. Please try again.'), isStatus: true }]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleIndex = async () => {
-    if (!user) return;
+    if (!token) return;
     setIndexing(true);
     try {
-      const res = await axios.post('http://localhost:8000/api/index', { user_id: user._id });
-      setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'bot', text: `Successfully indexed ${res.data.indexed_documents} documents from your profile!` }]);
+      const res = await chatRequest('/api/index', {});
+      setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'bot', text: `Successfully indexed ${res.data.indexed_documents} documents from your profile!`, isStatus: true }]);
     } catch (error) {
       console.error('Index error:', error);
-      setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'bot', text: "Failed to update your knowledge base index." }]);
+      setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'bot', text: chatErrorText(error, 'Failed to update your knowledge base index.'), isStatus: true }]);
     } finally {
       setIndexing(false);
     }
@@ -103,6 +122,9 @@ export const ChatWidget: React.FC = () => {
                 </div>
                 <div className={`chat-message bubble-${msg.sender}`}>
                   {msg.text}
+                  {msg.sources && msg.sources.length > 0 && (
+                    <div className="chat-sources">Sources: {msg.sources.join(', ')}</div>
+                  )}
                 </div>
               </div>
             ))}
@@ -122,7 +144,7 @@ export const ChatWidget: React.FC = () => {
               type="text" 
               value={input} 
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSend()}
               placeholder="Ask about your skills or projects..."
               className="form-control"
             />

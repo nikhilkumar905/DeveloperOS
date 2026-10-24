@@ -24,6 +24,14 @@ interface IPortfolioSettings {
 
 const COLORS = ['#6366f1', '#10b981', '#3b82f6', '#f43f5e', '#8b5cf6'];
 
+// Placeholder when no profile picture is set (matches the exported bundle)
+const initialsAvatar = (name: string, color: string) => {
+  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('') || 'D';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="100%" height="100%" fill="${color}"/>`
+    + `<text x="50%" y="54%" font-family="sans-serif" font-size="160" fill="#fff" text-anchor="middle" dominant-baseline="middle">${initials}</text></svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+};
+
 const PortfolioGenerator: React.FC = () => {
   const [settings, setSettings] = useState<IPortfolioSettings | null>(null);
   const [previewData, setPreviewData] = useState<any>(null);
@@ -33,16 +41,8 @@ const PortfolioGenerator: React.FC = () => {
 
   const { token: contextToken } = useContext(AuthContext);
 
-  const getAuthHeaders = () => {
-    let t = contextToken;
-    if (!t) {
-      try {
-        const storedInfo = localStorage.getItem('userInfo');
-        if (storedInfo) t = JSON.parse(storedInfo).token;
-      } catch (e) {}
-    }
-    return { headers: { Authorization: `Bearer ${t || ''}` } };
-  };
+  // The axios interceptor in AuthContext replaces this with a fresh token on every request
+  const getAuthHeaders = () => ({ headers: { Authorization: `Bearer ${contextToken || ''}` } });
 
   useEffect(() => {
     fetchPreviewData();
@@ -122,12 +122,12 @@ const PortfolioGenerator: React.FC = () => {
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
           {saveStatus && <span style={{ color: '#10b981', fontWeight: 600 }}>{saveStatus}</span>}
-          <button className="btn" style={{ backgroundColor: 'var(--bg-surface-hover)' }} onClick={handleSaveSettings}>
+          <button className="btn btn-secondary" onClick={handleSaveSettings}>
             Save Theme
           </button>
           <button
             className="btn"
-            style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white', display: 'flex', gap: '0.5rem' }}
+            style={{ background: '#059669', color: '#ffffff', display: 'flex', gap: '0.5rem' }}
             onClick={handleExportBundle}
             disabled={exporting}
           >
@@ -178,14 +178,14 @@ const PortfolioGenerator: React.FC = () => {
               <h3>Hero Subtitle & Bio</h3>
             </div>
             <input
-              style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '0.5rem', color: 'white', fontSize: '0.85rem' }}
+              style={{ background: 'var(--bg-input)', border: '1px solid var(--border-strong)', borderRadius: '6px', padding: '0.5rem', color: 'var(--text-main)', fontSize: '0.85rem' }}
               value={settings.heroSubtitle}
               onChange={(e) => setSettings({ ...settings, heroSubtitle: e.target.value })}
               placeholder="Hero Subtitle"
             />
             <textarea
               rows={3}
-              style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '0.5rem', color: 'white', fontSize: '0.85rem' }}
+              style={{ background: 'var(--bg-input)', border: '1px solid var(--border-strong)', borderRadius: '6px', padding: '0.5rem', color: 'var(--text-main)', fontSize: '0.85rem' }}
               value={settings.bio}
               onChange={(e) => setSettings({ ...settings, bio: e.target.value })}
               placeholder="Developer Bio"
@@ -253,7 +253,7 @@ const PortfolioGenerator: React.FC = () => {
                 </p>
               </div>
               <img
-                src={settings.profilePictureUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80'}
+                src={settings.profilePictureUrl || initialsAvatar(user?.name || 'Developer', settings.primaryColor)}
                 alt={name}
                 className="site-avatar"
                 style={{ borderColor: settings.primaryColor }}
@@ -290,7 +290,7 @@ const PortfolioGenerator: React.FC = () => {
                         backgroundColor: siteCard,
                         padding: '1.5rem',
                         borderRadius: '10px',
-                        border: '1px solid rgba(255,255,255,0.08)'
+                        border: `1px solid ${isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255, 255, 255, 0.08)'}`
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, marginBottom: '0.5rem' }}>
@@ -302,7 +302,7 @@ const PortfolioGenerator: React.FC = () => {
                       </p>
                       <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                         {(repo.languages || [repo.language || 'Code']).slice(0, 3).map((l: string, i: number) => (
-                          <span key={i} style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '4px', background: 'rgba(99,102,241,0.15)', color: settings.primaryColor }}>
+                          <span key={i} style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '4px', background: `${settings.primaryColor}26`, color: settings.primaryColor }}>
                             {l}
                           </span>
                         ))}

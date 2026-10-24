@@ -21,7 +21,7 @@ async def get_stats(current_user: User = Depends(get_current_user)):
     if not profile:
         profile = IntegrationProfile(user=user_id)
         await profile.insert()
-        await Notification(user=user_id, message="Welcome to PersonalOS! Connect GitHub and LeetCode to get started.", type="info").insert()
+        await Notification(user=user_id, message="Welcome to PersonalOS! Connect GitHub, LeetCode and GeeksforGeeks to get started.", type="info").insert()
         await TimelineEvent(user=user_id, title="Account Created", description="Joined PersonalOS developer workspace!", type="milestone").insert()
 
     github_stats = await GithubStats.find_one(GithubStats.user == user_id)
@@ -31,6 +31,8 @@ async def get_stats(current_user: User = Depends(get_current_user)):
         "githubUsername": profile.githubUsername or None,
         "leetcodeUsername": profile.leetcodeUsername or None,
         "leetcodeStats": profile.leetcodeStats.model_dump() if profile.leetcodeStats else None,
+        "gfgUsername": profile.gfgUsername or None,
+        "gfgStats": profile.gfgStats.model_dump() if profile.gfgUsername else None,
         "activeProjectsCount": active_projects_count,
         "lastSyncedAt": github_stats.lastSyncedAt.isoformat() if github_stats and github_stats.lastSyncedAt else None,
     }
@@ -69,7 +71,11 @@ async def get_notifications(current_user: User = Depends(get_current_user)):
 @router.put("/notifications/{notification_id}/read")
 async def mark_notification_read(notification_id: str, current_user: User = Depends(get_current_user)):
     from beanie import PydanticObjectId
-    notif = await Notification.find_one(Notification.id == PydanticObjectId(notification_id), Notification.user == current_user.id)
+    try:
+        oid = PydanticObjectId(notification_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    notif = await Notification.find_one(Notification.id == oid, Notification.user == current_user.id)
     if not notif:
         raise HTTPException(status_code=404, detail="Notification not found")
     notif.read = True
@@ -80,6 +86,6 @@ async def mark_notification_read(notification_id: str, current_user: User = Depe
 @router.get("/timeline")
 async def get_timeline(page: int = 1, limit: int = 20, current_user: User = Depends(get_current_user)):
     page = max(1, page)
-    limit = min(50, limit)
+    limit = max(1, min(50, limit))
     events = await TimelineEvent.find(TimelineEvent.user == current_user.id).sort("-timestamp").skip((page - 1) * limit).limit(limit).to_list()
     return [{**e.model_dump(by_alias=True), "_id": str(e.id)} for e in events]

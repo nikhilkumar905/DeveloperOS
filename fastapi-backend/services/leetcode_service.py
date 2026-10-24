@@ -31,20 +31,28 @@ query getUserProfile($username: String!) {
 """
 
 
-async def fetch_leetcode_profile(username: str) -> Dict[str, Any]:
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            LEETCODE_API,
-            json={"query": QUERY, "variables": {"username": username}},
-            headers={"Content-Type": "application/json", "Referer": "https://leetcode.com"},
-            timeout=15.0,
-        )
+class LeetcodeUnavailable(RuntimeError):
+    pass
 
-    data = response.json()
+
+async def fetch_leetcode_profile(username: str) -> Dict[str, Any]:
+    """Raises ValueError if the user doesn't exist, LeetcodeUnavailable if LeetCode can't be reached."""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                LEETCODE_API,
+                json={"query": QUERY, "variables": {"username": username}},
+                headers={"Content-Type": "application/json", "Referer": "https://leetcode.com"},
+                timeout=15.0,
+            )
+        data = response.json()
+    except (httpx.HTTPError, ValueError) as e:
+        raise LeetcodeUnavailable(f"Could not reach LeetCode: {e}") from e
+
     if data.get("errors"):
         raise ValueError(data["errors"][0]["message"])
 
-    inner = data.get("data", {})
+    inner = data.get("data") or {}
     if not inner.get("matchedUser"):
         raise ValueError("User not found on LeetCode")
 

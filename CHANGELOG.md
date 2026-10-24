@@ -4,6 +4,25 @@ All notable changes to DeveloperOS will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v200.html).
 
+## [2.0.0] - 2026-10-25
+
+### Changed
+- **Backend rewritten in Python (FastAPI + Beanie)**, replacing the Node/Express backend. All data is now stored per user in MongoDB (Atlas or a local container).
+- **Docker**: one `docker compose up` runs MongoDB, the API, the chat service and the frontend. Containers run as non-root, and `JWT_SECRET` is required with no default.
+- **Professional dark and light themes** with a toggle. The Overview layout was rebalanced so GitHub, LeetCode and GeeksforGeeks sit side by side.
+- **Resume Studio** now uses a classic one-page template, and the live preview mirrors the exported PDF exactly. It no longer invents contact details, education or certifications.
+
+### Added
+- **GeeksforGeeks integration**: problems by difficulty, coding score, streaks, institute rank, languages.
+- **Secure authentication**: email sign-up verified by a one-time code, Sign in with Google (OIDC + PKCE), password reset by code, 15-minute in-memory access tokens with rotating `httpOnly` refresh cookies and stolen-token detection, account lockout, security headers, and an activity-only token for the browser extension.
+- **Rate limits**: per-IP limits on auth endpoints, and per-account limits on LLM-backed endpoints (assistant: 10/min, 200/day).
+- **RAG pipeline upgrade**: per-user vector indexes, a repository catalog document, hybrid BM25 + embedding retrieval, evidence-first context and automatic re-indexing. Includes a 46-question benchmark (`chat-service/eval`). Accuracy went from 93.5% to 100%; see `docs/RAG_EVALUATION.md`.
+
+### Fixed
+- **Chat service**: it shared one vector index across all users and had no authentication.
+- **Retired LLM**: the Groq model `llama-3.1-8b-instant` was retired, which broke the assistant and insights.
+- **Crashes and data bugs**: resume creation, the knowledge-graph rebuild, GitHub sync with an expired token, frozen timestamps, mass-assignment in update endpoints, and unescaped text in the PDF/portfolio exports.
+
 ## [1.0.0] - 2026-07-01 — Production Release (DeveloperOS v1.0)
 
 ### Added

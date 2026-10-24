@@ -4,11 +4,12 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from models.user import User
+from beanie.operators import In
 from models.activity_log import ActivityLog, ActivityMetadata
 from models.activity_session import ActivitySession
 from models.integration_profile import IntegrationProfile
 from services.activity_aggregator import rebuild_daily_session, calculate_streak
-from middleware.auth import get_current_user
+from middleware.auth import get_current_user, get_activity_user
 
 router = APIRouter(prefix="/api/activity", tags=["activity"])
 
@@ -33,6 +34,28 @@ def _to_date_string(d: datetime) -> str:
     return d.astimezone(IST).strftime("%Y-%m-%d")
 
 
+def _parse_timestamp(value: Optional[str]) -> datetime:
+    """Parse an ISO timestamp into naive UTC (how timestamps are stored); fall back to now."""
+    if not value:
+        return datetime.utcnow()
+    try:
+        ts = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return datetime.utcnow()
+    if ts.tzinfo is not None:
+        ts = ts.astimezone(timezone.utc).replace(tzinfo=None)
+    return ts
+
+
+def _build_metadata(meta: dict) -> ActivityMetadata:
+    """Keep known fields only and drop nulls/bad values so one bad event can't 500 the batch."""
+    clean = {k: v for k, v in meta.items() if k in ActivityMetadata.model_fields and v is not None}
+    try:
+        return ActivityMetadata(**clean)
+    except Exception:
+        return ActivityMetadata(url=str(meta.get("url") or ""), title=str(meta.get("title") or ""))
+
+
 def _today_ist() -> str:
     return datetime.now(IST).strftime("%Y-%m-%d")
 
@@ -50,7 +73,7 @@ class LogActivityRequest(BaseModel):
 
 
 @router.post("/log", status_code=201)
-async def log_activity(body: LogActivityRequest, current_user: User = Depends(get_current_user)):
+async def log_activity(body: LogActivityRequest, current_user: User = Depends(get_activity_user)):
     uid = current_user.id
     if not body.events:
         raise HTTPException(status_code=400, detail="No events provided")
@@ -59,20 +82,13 @@ async def log_activity(body: LogActivityRequest, current_user: User = Depends(ge
     for e in body.events:
         if e.platform not in VALID_PLATFORMS or e.activityType not in VALID_TYPES:
             continue
-        ts = datetime.fromisoformat(e.timestamp) if e.timestamp else datetime.utcnow()
+        ts = _parse_timestamp(e.timestamp)
         meta = e.metadata or {}
         docs.append(ActivityLog(
             user=uid,
             platform=e.platform,
             activityType=e.activityType,
-            metadata=ActivityMetadata(
-                url=meta.get("url", ""), title=meta.get("title", ""),
-                repoName=meta.get("repoName", ""), repoOwner=meta.get("repoOwner", ""),
-                problemName=meta.get("problemName", ""), problemSlug=meta.get("problemSlug", ""),
-                difficulty=meta.get("difficulty"), language=meta.get("language", ""),
-                tags=meta.get("tags", []), contestName=meta.get("contestName", ""),
-                score=meta.get("score", 0),
-            ),
+            metadata=_build_metadata(meta),
             duration=e.duration or 0,
             timestamp=ts,
             synced=True,
@@ -101,7 +117,7 @@ async def get_activity_feed(
 ):
     uid = current_user.id
     page = max(1, page)
-    limit = min(50, limit)
+    limit = max(1, min(50, limit))
 
     # Build all filter conditions upfront
     conditions = [ActivityLog.user == uid]
@@ -124,6 +140,10 @@ async def get_activity_feed(
         except Exception:
             pass
     elif date:
+        try:
+            datetime.strptime(date, "%Y-%m-%d")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="date must be YYYY-MM-DD")
         # Convert the selected IST day to UTC window for querying stored naive-UTC timestamps
         day_start_ist = datetime.strptime(f"{date}T00:00:00", "%Y-%m-%dT%H:%M:%S").replace(tzinfo=IST)
         day_end_ist   = datetime.strptime(f"{date}T23:59:59", "%Y-%m-%dT%H:%M:%S").replace(tzinfo=IST)
@@ -143,7 +163,7 @@ async def get_activity_feed(
 
 
 @router.get("/summary")
-async def get_activity_summary(current_user: User = Depends(get_current_user)):
+async def get_activity_summary(current_user: User = Depends(get_activity_user)):
     uid = current_user.id
     today = _today_ist()
     session = await ActivitySession.find_one(ActivitySession.user == uid, ActivitySession.date == today)
@@ -163,7 +183,7 @@ async def get_weekly_activity(current_user: User = Depends(get_current_user)):
     uid = current_user.id
     now_ist = datetime.now(IST)
     days = [(now_ist - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(6, -1, -1)]
-    sessions = await ActivitySession.find(ActivitySession.user == uid, ActivitySession.date.in_(days)).to_list()
+    sessions = await ActivitySession.find(ActivitySession.user == uid, In(ActivitySession.date, days)).to_list()
     session_map = {s.date: s.model_dump(by_alias=True) for s in sessions}
     result = [session_map.get(d, {"date": d, "totalTimeMs": 0, "problemsSolved": 0, "productivityScore": 0, "activePlatforms": [], "platformBreakdown": {}}) for d in days]
     return {"days": result}

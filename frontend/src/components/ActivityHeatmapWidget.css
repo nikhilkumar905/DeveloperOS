@@ -45,7 +45,7 @@
   height: 14px;
   border-radius: 3px;
   background-color: var(--bg-color);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgb(var(--tint-rgb) / 0.05);
   transition: transform 0.1s, border-color 0.2s;
   cursor: pointer;
   position: relative;
@@ -53,16 +53,16 @@
 
 .heatmap-day:hover {
   transform: scale(1.15);
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgb(var(--tint-rgb) / 0.3);
   z-index: 10;
 }
 
 /* Activity Levels - Green/Indigo scale */
-.heatmap-day.level-0 { background-color: rgba(255, 255, 255, 0.03); }
-.heatmap-day.level-1 { background-color: rgba(99, 102, 241, 0.3); }
-.heatmap-day.level-2 { background-color: rgba(99, 102, 241, 0.5); }
-.heatmap-day.level-3 { background-color: rgba(99, 102, 241, 0.7); }
-.heatmap-day.level-4 { background-color: rgba(99, 102, 241, 1); }
+.heatmap-day.level-0 { background-color: rgb(var(--tint-rgb) / 0.03); }
+.heatmap-day.level-1 { background-color: rgb(var(--primary-rgb) / 0.3); }
+.heatmap-day.level-2 { background-color: rgb(var(--primary-rgb) / 0.5); }
+.heatmap-day.level-3 { background-color: rgb(var(--primary-rgb) / 0.7); }
+.heatmap-day.level-4 { background-color: rgb(var(--primary-rgb) / 1); }
 
 .heatmap-months {
   display: flex;

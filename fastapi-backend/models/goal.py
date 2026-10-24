@@ -1,5 +1,6 @@
 from typing import Optional
 from beanie import Document, PydanticObjectId
+from pydantic import Field
 from datetime import datetime
 
 
@@ -11,7 +12,7 @@ class Goal(Document):
     unit: str
     deadline: str
     completed: bool = False
-    createdAt: datetime = datetime.utcnow()
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
 
     class Settings:
         name = "goals"

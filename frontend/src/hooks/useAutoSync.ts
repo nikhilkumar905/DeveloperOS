@@ -7,7 +7,7 @@ import { API_BASE_URL } from '../lib/api';
  * every `intervalMs` milliseconds.
  */
 export const useAutoSync = (token: string | null, intervalMs: number = 3 * 60 * 1000) => {
-  const syncTimer = useRef<NodeJS.Timeout | null>(null);
+  const syncTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (!token) return;
@@ -15,15 +15,10 @@ export const useAutoSync = (token: string | null, intervalMs: number = 3 * 60 * 
     const performSync = async () => {
       const headers = { Authorization: `Bearer ${token}` };
       
-      try {
-        // Sync GitHub silently (fails safely if not connected)
-        await axios.post(`${API_BASE_URL}/api/github/sync`, {}, { headers }).catch(() => {});
-      } catch (e) {}
-
-      try {
-        // Sync LeetCode silently
-        await axios.post(`${API_BASE_URL}/api/leetcode/sync`, {}, { headers }).catch(() => {});
-      } catch (e) {}
+      // Sync each connected platform silently (each fails safely if not connected)
+      for (const platform of ['github', 'leetcode', 'gfg']) {
+        await axios.post(`${API_BASE_URL}/api/${platform}/sync`, {}, { headers }).catch(() => {});
+      }
 
       // Emit custom event so pages know they can refresh their data
       window.dispatchEvent(new Event('personalos-sync-complete'));

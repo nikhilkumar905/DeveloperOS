@@ -1,5 +1,6 @@
 from typing import Optional, List, Dict
 from beanie import Document, PydanticObjectId
+from pydantic import Field
 from datetime import datetime
 
 
@@ -16,7 +17,7 @@ class ActivitySession(Document):
     productivityScore: int = 0
     longestSession: float = 0
     activePlatforms: List[str] = []
-    updatedAt: datetime = datetime.utcnow()
+    updatedAt: datetime = Field(default_factory=datetime.utcnow)
 
     class Settings:
         name = "activitysessions"

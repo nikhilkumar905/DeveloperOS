@@ -3,82 +3,10 @@ import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { FileText, Sparkles, Download, Plus, Trash2, Award } from 'lucide-react';
 import { API_BASE_URL } from '../lib/api';
+import ResumePreview from '../components/ResumePreview';
+import type { IResumeProfile } from '../types/resume';
 import './ResumeStudio.css';
 
-interface IResumeProfile {
-  _id?: string;
-  personalInfo: {
-    fullName: string;
-    jobTitle: string;
-    email: string;
-    phone: string;
-    location: string;
-    githubUrl: string;
-    linkedinUrl: string;
-    websiteUrl: string;
-    customLinks?: Array<{ label: string; url: string }>;
-  };
-  careerObjective: string;
-  targetRole: string;
-  selectedTemplate: string;
-  skills: {
-    technical: string[];
-    frameworks: string[];
-    tools: string[];
-    soft: string[];
-  };
-  categorizedSkills?: Array<{
-    category: string;
-    skills: string[];
-  }>;
-  experience: Array<{
-    role: string;
-    company: string;
-    location: string;
-    startDate: string;
-    endDate: string;
-    current: boolean;
-    bullets: string[];
-  }>;
-  projects: Array<{
-    name: string;
-    description: string;
-    technologies: string[];
-    bullets: string[];
-    liveUrl?: string;
-    githubUrl?: string;
-  }>;
-  education: Array<{
-    institution: string;
-    degree: string;
-    fieldOfStudy: string;
-    startYear: string;
-    endYear: string;
-    gpa?: string;
-    highlights?: string[];
-  }>;
-  hackathons?: Array<{
-    name: string;
-    achievement?: string;
-    date?: string;
-  }>;
-  certifications?: Array<{
-    name: string;
-    issuer: string;
-    credentialUrl?: string;
-  }>;
-  customSections?: Array<{
-    title: string;
-    items: Array<{
-      title: string;
-      subtitle?: string;
-      date?: string;
-      bullets?: string[];
-    }>;
-  }>;
-  atsScore: number;
-  atsSuggestions: string[];
-}
 
 const ResumeStudio: React.FC = () => {
   const [profile, setProfile] = useState<IResumeProfile | null>(null);
@@ -93,16 +21,8 @@ const ResumeStudio: React.FC = () => {
 
   const { token: contextToken } = useContext(AuthContext);
 
-  const getAuthHeaders = () => {
-    let t = contextToken;
-    if (!t) {
-      try {
-        const storedInfo = localStorage.getItem('userInfo');
-        if (storedInfo) t = JSON.parse(storedInfo).token;
-      } catch (e) {}
-    }
-    return { headers: { Authorization: `Bearer ${t || ''}` } };
-  };
+  // The axios interceptor in AuthContext replaces this with a fresh token on every request
+  const getAuthHeaders = () => ({ headers: { Authorization: `Bearer ${contextToken || ''}` } });
 
   useEffect(() => {
     fetchProfile();
@@ -227,14 +147,14 @@ const ResumeStudio: React.FC = () => {
             <Sparkles size={18} />
             {inferring ? 'Inferring...' : 'Auto-Infer from GitHub'}
           </button>
-          <button className="btn" style={{ backgroundColor: 'var(--bg-surface-hover)' }} onClick={handleSave}>
+          <button className="btn btn-secondary" onClick={handleSave}>
             Save Changes
           </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(15, 23, 42, 0.6)', padding: '0.2rem 0.6rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>PDF Name:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgb(var(--surface-rgb) / 0.6)', padding: '0.2rem 0.6rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>PDF Name:</span>
             <input
               type="text"
-              style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '0.85rem', width: '150px', outline: 'none' }}
+              style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', fontSize: '0.85rem', width: '150px', outline: 'none' }}
               value={downloadFilename}
               onChange={(e) => setDownloadFilename(e.target.value)}
               placeholder="Custom Filename"
@@ -264,7 +184,7 @@ const ResumeStudio: React.FC = () => {
             <div className="ats-progress">
               <div className="ats-progress-bar" style={{ width: `${profile.atsScore || 85}%` }}></div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#94a3b8' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               <span>Target Role: <strong>{profile.targetRole}</strong></span>
               <span>Template: <strong>{profile.selectedTemplate}</strong></span>
             </div>
@@ -376,7 +296,7 @@ const ResumeStudio: React.FC = () => {
                   {(profile.personalInfo?.customLinks || []).map((link, idx) => (
                     <div key={idx} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.4rem', alignItems: 'center' }}>
                       <input
-                        style={{ width: '130px', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '0.4rem', color: 'white', fontSize: '0.85rem' }}
+                        style={{ width: '130px', background: 'var(--bg-input)', border: '1px solid var(--border-strong)', borderRadius: '4px', padding: '0.4rem', color: 'var(--text-main)', fontSize: '0.85rem' }}
                         placeholder="Label (e.g. LeetCode)"
                         value={link.label}
                         onChange={(e) => {
@@ -386,7 +306,7 @@ const ResumeStudio: React.FC = () => {
                         }}
                       />
                       <input
-                        style={{ flex: 1, background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '0.4rem', color: 'white', fontSize: '0.85rem' }}
+                        style={{ flex: 1, background: 'var(--bg-input)', border: '1px solid var(--border-strong)', borderRadius: '4px', padding: '0.4rem', color: 'var(--text-main)', fontSize: '0.85rem' }}
                         placeholder="URL (https://...)"
                         value={link.url}
                         onChange={(e) => {
@@ -429,13 +349,13 @@ const ResumeStudio: React.FC = () => {
                     style={{ backgroundColor: 'var(--primary)', padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center' }}
                     onClick={() => {
                       const newExp = [...(profile.experience || []), {
-                        role: 'Software Developer Intern',
-                        company: 'Tech Corp',
-                        location: 'Remote',
-                        startDate: 'May 2025',
-                        endDate: 'July 2025',
+                        role: '',
+                        company: '',
+                        location: '',
+                        startDate: '',
+                        endDate: '',
                         current: false,
-                        bullets: ['Automated business workflows reducing processing latency by 35%.']
+                        bullets: ['']
                       }];
                       setProfile({ ...profile, experience: newExp });
                     }}
@@ -448,7 +368,7 @@ const ResumeStudio: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.5rem' }}>
                       <input
                         style={{ fontWeight: 700, flex: 1 }}
-                        placeholder="Role (e.g. Salesforce Intern)"
+                        placeholder="Role (e.g. Software Engineering Intern)"
                         value={exp.role}
                         onChange={(e) => {
                           const updated = [...profile.experience];
@@ -458,7 +378,7 @@ const ResumeStudio: React.FC = () => {
                       />
                       <input
                         style={{ flex: 1 }}
-                        placeholder="Company (e.g. SmartBridge)"
+                        placeholder="Company (e.g. Acme Corp)"
                         value={exp.company}
                         onChange={(e) => {
                           const updated = [...profile.experience];
@@ -484,7 +404,7 @@ const ResumeStudio: React.FC = () => {
                       />
                     </div>
                     <div style={{ marginTop: '0.5rem' }}>
-                      <label style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Bullet Points (one per line)</label>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Bullet Points (one per line)</label>
                       <textarea
                         rows={3}
                         style={{ width: '100%', marginTop: '0.25rem' }}
@@ -510,13 +430,13 @@ const ResumeStudio: React.FC = () => {
                     style={{ backgroundColor: 'var(--primary)', padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center' }}
                     onClick={() => {
                       const newEdu = [...(profile.education || []), {
-                        institution: 'SRM University AP',
-                        degree: 'B.Tech',
-                        fieldOfStudy: 'Computer Science Engineering',
-                        startYear: '2023',
-                        endYear: 'Present',
-                        gpa: '8.51/10',
-                        highlights: ['Andhra Pradesh, India']
+                        institution: '',
+                        location: '',
+                        degree: '',
+                        fieldOfStudy: '',
+                        startYear: '',
+                        endYear: '',
+                        gpa: ''
                       }];
                       setProfile({ ...profile, education: newEdu });
                     }}
@@ -529,7 +449,7 @@ const ResumeStudio: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.5rem' }}>
                       <input
                         style={{ fontWeight: 700, flex: 1 }}
-                        placeholder="Institution (e.g. SRM University AP)"
+                        placeholder="Institution (e.g. State University)"
                         value={edu.institution}
                         onChange={(e) => {
                           const updated = [...profile.education];
@@ -539,11 +459,11 @@ const ResumeStudio: React.FC = () => {
                       />
                       <input
                         style={{ flex: 1 }}
-                        placeholder="Location (e.g. Andhra Pradesh, India)"
-                        value={edu.highlights && edu.highlights[0] ? edu.highlights[0] : ''}
+                        placeholder="Location (e.g. Bengaluru, India)"
+                        value={edu.location ?? edu.highlights?.[0] ?? ''}
                         onChange={(e) => {
                           const updated = [...profile.education];
-                          updated[idx].highlights = [e.target.value];
+                          updated[idx].location = e.target.value;
                           setProfile({ ...profile, education: updated });
                         }}
                       />
@@ -579,7 +499,7 @@ const ResumeStudio: React.FC = () => {
                     <div>
                       <input
                         style={{ width: '100%', fontSize: '0.85rem' }}
-                        placeholder="Cumulative GPA (e.g. 8.51/10)"
+                        placeholder="Cumulative GPA (e.g. 8.5/10)"
                         value={edu.gpa || ''}
                         onChange={(e) => {
                           const updated = [...profile.education];
@@ -612,10 +532,10 @@ const ResumeStudio: React.FC = () => {
                       style={{ backgroundColor: 'var(--primary)', padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center' }}
                       onClick={() => {
                         const newProj = [...(profile.projects || []), {
-                          name: 'New Project',
+                          name: '',
                           description: '',
-                          technologies: ['React', 'Node.js', 'TypeScript'],
-                          bullets: ['Developed full-stack web application with secure authentication.'],
+                          technologies: [],
+                          bullets: [''],
                           githubUrl: '',
                           liveUrl: ''
                         }];
@@ -628,18 +548,18 @@ const ResumeStudio: React.FC = () => {
                 </div>
 
                 {showRepoModal && githubRepos.length > 0 && (
-                  <div style={{ padding: '1rem', background: '#1e293b', border: '1px solid #3b82f6', borderRadius: '8px', marginBottom: '1rem' }}>
+                  <div style={{ padding: '1rem', background: 'var(--bg-elevated)', border: '1px solid var(--primary)', borderRadius: '8px', marginBottom: '1rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#60a5fa' }}>Select a GitHub Repository to Import:</span>
-                      <button onClick={() => setShowRepoModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>✕</button>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary)' }}>Select a GitHub Repository to Import:</span>
+                      <button onClick={() => setShowRepoModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>✕</button>
                     </div>
                     <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       {githubRepos.map((repo, rIdx) => (
-                        <div key={rIdx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', background: '#0f172a', borderRadius: '4px' }}>
+                        <div key={rIdx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px' }}>
                           <div>
-                            <span style={{ fontWeight: 600, color: '#f8fafc' }}>{repo.name}</span>
-                            <span style={{ marginLeft: '8px', fontSize: '0.75rem', color: '#e2e8f0', background: '#334155', padding: '2px 6px', borderRadius: '4px' }}>{repo.language || 'Code'}</span>
-                            {repo.stars > 0 && <span style={{ marginLeft: '8px', fontSize: '0.75rem', color: '#fbbf24' }}>⭐ {repo.stars}</span>}
+                            <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{repo.name}</span>
+                            <span style={{ marginLeft: '8px', fontSize: '0.75rem', color: 'var(--text-soft)', background: 'var(--bg-surface-hover)', padding: '2px 6px', borderRadius: '4px' }}>{repo.language || 'Code'}</span>
+                            {repo.stars > 0 && <span style={{ marginLeft: '8px', fontSize: '0.75rem', color: 'var(--warning)' }}>⭐ {repo.stars}</span>}
                           </div>
                           <button
                             className="btn"
@@ -695,7 +615,7 @@ const ResumeStudio: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem' }}>
                       <input
                         style={{ fontWeight: 700, flex: 1 }}
-                        placeholder="Project Name (e.g. AI Code Translator)"
+                        placeholder="Project Name (e.g. Weather Dashboard)"
                         value={proj.name}
                         onChange={(e) => {
                           const updated = [...profile.projects];
@@ -741,7 +661,7 @@ const ResumeStudio: React.FC = () => {
                       />
                     </div>
                     <div style={{ marginTop: '0.5rem' }}>
-                      <label style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Bullet Points (one per line)</label>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Bullet Points (one per line)</label>
                       <textarea
                         rows={3}
                         style={{ width: '100%', marginTop: '0.25rem' }}
@@ -767,8 +687,8 @@ const ResumeStudio: React.FC = () => {
                     style={{ backgroundColor: 'var(--primary)', padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center' }}
                     onClick={() => {
                       const newHack = [...(profile.hackathons || []), {
-                        name: 'Odoo Hackathon 2025 Gandhinagar',
-                        achievement: 'Secured Top 10 position in Internal Round'
+                        name: '',
+                        achievement: ''
                       }];
                       setProfile({ ...profile, hackathons: newHack });
                     }}
@@ -816,8 +736,8 @@ const ResumeStudio: React.FC = () => {
                     style={{ backgroundColor: 'var(--primary)', padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center' }}
                     onClick={() => {
                       const newCerts = [...(profile.certifications || []), {
-                        name: 'MongoDB Associate Developer',
-                        issuer: 'MongoDB'
+                        name: '',
+                        issuer: ''
                       }];
                       setProfile({ ...profile, certifications: newCerts });
                     }}
@@ -879,8 +799,8 @@ const ResumeStudio: React.FC = () => {
                     style={{ backgroundColor: 'var(--primary)', padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center' }}
                     onClick={() => {
                       const newCats = [...(profile.categorizedSkills || []), {
-                        category: 'New Category',
-                        skills: ['Skill 1', 'Skill 2']
+                        category: '',
+                        skills: []
                       }];
                       setProfile({ ...profile, categorizedSkills: newCats });
                     }}
@@ -888,7 +808,7 @@ const ResumeStudio: React.FC = () => {
                     <Plus size={14} style={{ marginRight: '4px' }} /> Add Skill Category
                   </button>
                 </div>
-                <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '-0.5rem 0 0.5rem 0' }}>Add or edit your own categories (Programming Languages, Frontend, Backend & APIs, Databases, AI/ML, etc.)</p>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '-0.5rem 0 0.5rem 0' }}>Add or edit your own categories (Programming Languages, Frontend, Backend & APIs, Databases, AI/ML, etc.)</p>
                 {(profile.categorizedSkills || []).map((cat, idx) => (
                   <div key={idx} style={{ padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: '6px', marginBottom: '0.5rem' }}>
                     <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
@@ -931,8 +851,8 @@ const ResumeStudio: React.FC = () => {
                     style={{ backgroundColor: 'var(--primary)', padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center' }}
                     onClick={() => {
                       const newSecs = [...(profile.customSections || []), {
-                        title: 'PUBLICATIONS / LEADERSHIP',
-                        items: [{ title: 'Item Title', subtitle: 'Detail', date: '2025', bullets: ['Key accomplishment bullet point.'] }]
+                        title: '',
+                        items: [{ title: '', subtitle: '', date: '', bullets: [''] }]
                       }];
                       setProfile({ ...profile, customSections: newSecs });
                     }}
@@ -941,7 +861,7 @@ const ResumeStudio: React.FC = () => {
                   </button>
                 </div>
                 {(profile.customSections || []).map((sec, idx) => (
-                  <div key={idx} style={{ padding: '1rem', border: '1px solid var(--border-color)', borderRadius: '6px', marginBottom: '0.75rem', background: 'rgba(15, 23, 42, 0.4)' }}>
+                  <div key={idx} style={{ padding: '1rem', border: '1px solid var(--border-color)', borderRadius: '6px', marginBottom: '0.75rem', background: 'rgb(var(--surface-rgb) / 0.4)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.75rem' }}>
                       <input
                         style={{ fontWeight: 800, textTransform: 'uppercase', flex: 1, fontSize: '0.95rem' }}
@@ -968,7 +888,7 @@ const ResumeStudio: React.FC = () => {
                       }} style={{ color: 'var(--danger)', background: 'transparent', border: 'none', cursor: 'pointer' }}><Trash2 size={16} /></button>
                     </div>
                     {(sec.items || []).map((item, iIdx) => (
-                      <div key={iIdx} style={{ padding: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '0.5rem' }}>
+                      <div key={iIdx} style={{ padding: '0.5rem', borderTop: '1px solid rgb(var(--tint-rgb) / 0.1)', marginTop: '0.5rem' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.4rem' }}>
                           <input
                             style={{ fontWeight: 600, flex: 1 }}
@@ -1019,194 +939,12 @@ const ResumeStudio: React.FC = () => {
         {/* Right Column: Live Classic 1-Page Preview Panel */}
         <div className="preview-panel">
           <div className="preview-toolbar">
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>CLASSIC 1-PAGE DOCUMENT PREVIEW</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>CLASSIC 1-PAGE PREVIEW</span>
             <span style={{ fontSize: '0.8rem', color: '#10b981' }}>● Exact PDF Mirror</span>
           </div>
 
           <div className="resume-paper classic-paper">
-            {/* Header */}
-            <div className="paper-header-classic">
-              <h2 className="classic-name">{(profile.personalInfo?.fullName || 'Developer Profile').toUpperCase()}</h2>
-              <div className="classic-contact">
-                Email: {profile.personalInfo?.email?.trim() || '******'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Phone: {profile.personalInfo?.phone?.trim() || '******'}
-              </div>
-              <div className="classic-contact">
-                LinkedIn: {profile.personalInfo?.linkedinUrl?.trim() || '******'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GitHub: {profile.personalInfo?.githubUrl?.trim() || '******'}
-                {profile.personalInfo?.websiteUrl?.trim() ? ` &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Portfolio: ${profile.personalInfo.websiteUrl.trim()}` : ''}
-                {(profile.personalInfo?.customLinks || []).filter(l => l.label && l.url).map(l => ` &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${l.label}: ${l.url}`).join('')}
-              </div>
-              <div className="classic-contact">
-                Location: {profile.personalInfo?.location?.trim() || '******'}
-              </div>
-            </div>
-
-            {/* Objective */}
-            {profile.careerObjective?.trim() && (
-              <div className="classic-section">
-                <div className="classic-section-title">WORK EXPERIENCE / SUMMARY</div>
-                <div className="classic-body" style={{ marginTop: '3px' }}>{profile.careerObjective}</div>
-              </div>
-            )}
-
-            {/* Work Experience */}
-            {profile.experience && profile.experience.length > 0 && (
-              <div className="classic-section">
-                <div className="classic-section-title">WORK EXPERIENCE</div>
-                <div className="classic-body">
-                  {profile.experience.map((exp, idx) => (
-                    <div key={idx} className="classic-item">
-                      <div className="classic-item-row">
-                        <span className="classic-bold">{exp.role}{exp.company ? ` | ${exp.company}` : ''}</span>
-                        <span>{exp.startDate} {exp.startDate || exp.endDate ? '–' : ''} {exp.current ? 'Present' : exp.endDate}</span>
-                      </div>
-                      <div className="classic-bullets">
-                        {exp.bullets?.map((b, i) => (
-                          <div key={i}>●   {b}</div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Education */}
-            {profile.education && profile.education.length > 0 && (
-              <div className="classic-section">
-                <div className="classic-section-title">EDUCATION</div>
-                <div className="classic-body">
-                  {profile.education.map((edu, idx) => (
-                    <div key={idx} className="classic-item">
-                      <div className="classic-item-row">
-                        <span className="classic-bold">{edu.institution}</span>
-                        <span>{edu.highlights && edu.highlights[0] ? edu.highlights[0] : ''}</span>
-                      </div>
-                      <div className="classic-item-row">
-                        <span>{edu.fieldOfStudy ? `${edu.degree} in ${edu.fieldOfStudy}` : edu.degree}</span>
-                        <span>{edu.startYear} {edu.startYear || edu.endYear ? '–' : ''} {edu.endYear}</span>
-                      </div>
-                      {edu.gpa && <div style={{ fontSize: '0.84rem' }}>●   Cumulative GPA: {edu.gpa}</div>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Projects */}
-            {profile.projects && profile.projects.length > 0 && (
-              <div className="classic-section">
-                <div className="classic-section-title">PROJECTS</div>
-                <div className="classic-body">
-                  {profile.projects.map((proj, idx) => (
-                    <div key={idx} className="classic-item">
-                      <div className="classic-item-row">
-                        <span className="classic-bold">
-                          {proj.name}{proj.technologies && proj.technologies.length > 0 ? ` (${proj.technologies.join(', ')})` : ''}
-                        </span>
-                        <span>
-                          {proj.githubUrl?.trim() && (
-                            <a href={proj.githubUrl.trim()} target="_blank" rel="noopener noreferrer" style={{ color: '#1d4ed8', textDecoration: 'underline' }}>GitHub</a>
-                          )}
-                          {proj.githubUrl?.trim() && proj.liveUrl?.trim() && ' | '}
-                          {proj.liveUrl?.trim() && (
-                            <a href={proj.liveUrl.trim()} target="_blank" rel="noopener noreferrer" style={{ color: '#1d4ed8', textDecoration: 'underline' }}>Live</a>
-                          )}
-                        </span>
-                      </div>
-                      {proj.description && (!proj.bullets || proj.bullets.length === 0) && (
-                        <div className="classic-bullets"><div>●   {proj.description}</div></div>
-                      )}
-                      <div className="classic-bullets">
-                        {proj.bullets?.map((b, i) => (
-                          <div key={i}>●   {b}</div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Hackathons */}
-            {profile.hackathons && profile.hackathons.length > 0 && (
-              <div className="classic-section">
-                <div className="classic-section-title">HACKATHONS</div>
-                <div className="classic-body">
-                  {profile.hackathons.map((hack, idx) => (
-                    <div key={idx} style={{ fontSize: '0.86rem', marginBottom: '3px' }}>
-                      ●   {hack.name}{hack.achievement ? ` | ${hack.achievement}` : ''}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Certifications */}
-            {profile.certifications && profile.certifications.length > 0 && (
-              <div className="classic-section">
-                <div className="classic-section-title">CERTIFICATIONS</div>
-                <div className="classic-body">
-                  {profile.certifications.map((cert, idx) => (
-                    <div key={idx} className="classic-item-row" style={{ marginBottom: '3px' }}>
-                      <span>●   {cert.name} | {cert.issuer}</span>
-                      {cert.credentialUrl ? (
-                        <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#1d4ed8', textDecoration: 'underline' }}>Certificate</a>
-                      ) : (
-                        <span>Certificate</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Skills */}
-            <div className="classic-section">
-              <div className="classic-section-title">SKILLS</div>
-              <div className="classic-body">
-                {profile.categorizedSkills && profile.categorizedSkills.length > 0 ? (
-                  profile.categorizedSkills.map((cat, idx) => (
-                    cat.skills && cat.skills.length > 0 ? (
-                      <div key={idx} style={{ display: 'flex', marginBottom: '3px', fontSize: '0.86rem' }}>
-                        <span className="classic-bold" style={{ width: '190px', flexShrink: 0 }}>{cat.category}:</span>
-                        <span>{cat.skills.join(', ')}</span>
-                      </div>
-                    ) : null
-                  ))
-                ) : (
-                  <>
-                    {profile.skills?.technical?.length > 0 && <div style={{ display: 'flex', marginBottom: '3px', fontSize: '0.86rem' }}><span className="classic-bold" style={{ width: '190px', flexShrink: 0 }}>Programming Languages:</span><span>{profile.skills.technical.join(', ')}</span></div>}
-                    {profile.skills?.frameworks?.length > 0 && <div style={{ display: 'flex', marginBottom: '3px', fontSize: '0.86rem' }}><span className="classic-bold" style={{ width: '190px', flexShrink: 0 }}>Frameworks & Libs:</span><span>{profile.skills.frameworks.join(', ')}</span></div>}
-                    {profile.skills?.tools?.length > 0 && <div style={{ display: 'flex', marginBottom: '3px', fontSize: '0.86rem' }}><span className="classic-bold" style={{ width: '190px', flexShrink: 0 }}>Tools & Platforms:</span><span>{profile.skills.tools.join(', ')}</span></div>}
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Custom Sections */}
-            {profile.customSections && profile.customSections.map((sec, idx) => (
-              sec.title && sec.items?.length > 0 ? (
-                <div key={idx} className="classic-section">
-                  <div className="classic-section-title">{sec.title.toUpperCase()}</div>
-                  <div className="classic-body">
-                    {sec.items.map((item, iIdx) => (
-                      <div key={iIdx} className="classic-item">
-                        <div className="classic-item-row">
-                          <span className="classic-bold">{item.title}</span>
-                          <span>{item.date}</span>
-                        </div>
-                        {item.subtitle && <div style={{ fontStyle: 'italic', fontSize: '0.84rem' }}>{item.subtitle}</div>}
-                        <div className="classic-bullets">
-                          {item.bullets?.map((b, i) => (
-                            <div key={i}>•   {b}</div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null
-            ))}
+            <ResumePreview profile={profile} />
           </div>
         </div>
       </div>

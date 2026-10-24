@@ -1,9 +1,8 @@
 import os
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
-from jose import jwt, JWTError
 from models.user import User
 from models.integration_profile import IntegrationProfile
 from models.github_stats import GithubStats, GithubProfile, GithubRepository, AggregatedStats
@@ -11,12 +10,12 @@ from models.knowledge_graph import KnowledgeGraph
 from models.developer_intelligence import DeveloperIntelligence
 import services.github_service as gh_svc
 from middleware.auth import get_current_user
+from services.auth_service import create_state_token, decode_token
 import json
+from urllib.parse import urlencode
 
 router = APIRouter(prefix="/api/github", tags=["github"])
 
-JWT_SECRET = os.getenv("JWT_SECRET", "")
-ALGORITHM = "HS256"
 
 
 def get_frontend_url() -> str:
@@ -28,14 +27,11 @@ async def get_auth_url(request: Request, current_user: User = Depends(get_curren
     client_id = os.getenv("GITHUB_CLIENT_ID")
     if not client_id:
         raise HTTPException(status_code=500, detail="GitHub Client ID is missing.")
-    if not JWT_SECRET:
-        raise HTTPException(status_code=500, detail="Server configuration error")
-
-    state = jwt.encode({"userId": str(current_user.id), "exp": datetime.utcnow() + timedelta(minutes=10)}, JWT_SECRET, algorithm=ALGORITHM)
-    scope = "repo read:user"
-    redirect_uri = f"{request.base_url}api/github/callback".rstrip("/")
-    auth_url = f"https://github.com/login/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&scope={scope}&state={state}"
-    return {"url": auth_url}
+    state = create_state_token({"purpose": "github", "userId": str(current_user.id)})
+    # Must exactly match the callback registered on the GitHub OAuth app, whatever host the app was opened on
+    redirect_uri = os.getenv("GITHUB_CALLBACK_URL") or f"{request.base_url}api/github/callback"
+    query = urlencode({"client_id": client_id, "redirect_uri": redirect_uri, "scope": "repo read:user", "state": state})
+    return {"url": f"https://github.com/login/oauth/authorize?{query}"}
 
 
 @router.get("/callback")
@@ -43,13 +39,9 @@ async def callback(code: str = None, state: str = None):
     frontend_url = get_frontend_url()
     if not code or not state:
         return RedirectResponse(f"{frontend_url}?github_error=missing_params")
-    if not JWT_SECRET:
-        return RedirectResponse(f"{frontend_url}?github_error=server_config")
-
-    try:
-        decoded = jwt.decode(state, JWT_SECRET, algorithms=[ALGORITHM])
-    except JWTError:
-        return RedirectResponse(f"{frontend_url}?github_error=invalid_state")
+    decoded = decode_token(state, {"oauth_state"})
+    if not decoded or decoded.get("purpose") != "github":
+        return RedirectResponse(f"{frontend_url}/dashboard?github_error=invalid_state")
 
     user_id = decoded.get("userId")
     try:
@@ -65,13 +57,14 @@ async def callback(code: str = None, state: str = None):
         integration.githubToken = token
         await integration.save()
 
-        asyncio.create_task(_sync_github_data(uid, token))
+        asyncio.create_task(_sync_in_background(uid, token))
         return RedirectResponse(f"{frontend_url}/dashboard?github_connected=true")
     except Exception as e:
         print(f"[github callback] error: {e}")
         return RedirectResponse(f"{frontend_url}?github_error=true")
 
 
+@router.post("/disconnect")
 @router.delete("/disconnect")
 async def disconnect(current_user: User = Depends(get_current_user)):
     uid = current_user.id
@@ -102,7 +95,14 @@ async def sync(current_user: User = Depends(get_current_user)):
     if not integration or not integration.githubToken:
         raise HTTPException(status_code=400, detail="GitHub is not connected.")
 
-    await _sync_github_data(uid, integration.githubToken)
+    try:
+        await _sync_github_data(uid, integration.githubToken)
+    except gh_svc.GithubAuthError as e:
+        # 400 rather than 401: the frontend treats 401 as "log the user out"
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        print(f"[github sync] error: {e}")
+        raise HTTPException(status_code=502, detail="Failed to sync data from GitHub")
 
     stats = await GithubStats.find_one(GithubStats.user == uid)
     if not stats:
@@ -112,6 +112,13 @@ async def sync(current_user: User = Depends(get_current_user)):
         repo.pop("filePaths", None)
         repo.pop("dependencies", None)
     return result
+
+
+async def _sync_in_background(user_id, token: str):
+    try:
+        await _sync_github_data(user_id, token)
+    except Exception as e:
+        print(f"[github sync] background sync failed: {e}")
 
 
 async def _sync_github_data(user_id, token: str):
@@ -210,6 +217,5 @@ async def _sync_github_data(user_id, token: str):
     stats.lastSyncedAt = datetime.utcnow()
     await stats.save()
 
-    # Invalidate caches
-    await KnowledgeGraph.find_one(KnowledgeGraph.user == user_id).delete()
-    await DeveloperIntelligence.find_one(DeveloperIntelligence.user == user_id).delete()
+    from routers.analytics import invalidate_insights
+    await invalidate_insights(user_id)

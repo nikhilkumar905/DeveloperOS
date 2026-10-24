@@ -1,6 +1,6 @@
 from typing import Optional, List, Dict, Any
 from beanie import Document, PydanticObjectId
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 
@@ -24,7 +24,7 @@ class ActivityLog(Document):
     activityType: str
     metadata: ActivityMetadata = ActivityMetadata()
     duration: float = 0
-    timestamp: datetime = datetime.utcnow()
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
     synced: bool = True
 
     class Settings:

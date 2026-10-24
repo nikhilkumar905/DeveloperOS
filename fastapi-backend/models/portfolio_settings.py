@@ -8,6 +8,9 @@ class SectionVisibility(BaseModel):
     showProjects: bool = True
     showExperience: bool = True
     showContact: bool = True
+    showEducation: bool = True
+    showLeetCode: bool = True
+    showGraph: bool = True
 
 
 class PortfolioSettings(Document):

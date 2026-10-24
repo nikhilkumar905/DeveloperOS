@@ -1,22 +1,102 @@
+/*
+ * DeveloperOS design tokens.
+ * Two themes share one set of variable names; components only ever use the variables.
+ * The theme is chosen by <html data-theme="dark|light"> (see index.html + lib/theme.ts).
+ *
+ * *-rgb tokens are space-separated channels for translucent use:
+ *   rgb(var(--tint-rgb) / 0.06)   subtle overlay that is light-on-dark or dark-on-light
+ *   rgb(var(--primary-rgb) / 0.12) tinted accent background
+ */
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg-color: #0b1220;
+  --bg-surface: #111a2b;
+  --bg-surface-hover: #16213a;
+  --bg-elevated: #172235;
+  --bg-input: #0d1626;
+
+  --text-main: #e6edf6;
+  --text-soft: #c3cedd;
+  --text-muted: #8b98ab;
+
+  --border-color: #22304a;
+  --border-strong: #31415f;
+
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --primary-rgb: 59 130 246;
+  --on-primary: #ffffff;
+
+  --tint-rgb: 255 255 255;
+  --surface-rgb: 17 26 43;
+  --shade-rgb: 0 0 0;
+  --shade-strength: 1;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 12px 28px rgb(0 0 0 / 0.45);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg-color: #f4f6f9;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #f1f4f8;
+  --bg-elevated: #f8fafc;
+  --bg-input: #ffffff;
+
+  --text-main: #0f172a;
+  --text-soft: #334155;
+  --text-muted: #5b6b80;
+
+  --border-color: #dde3ea;
+  --border-strong: #c5cfdb;
+
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-rgb: 37 99 235;
+  --on-primary: #ffffff;
+
+  --tint-rgb: 15 23 42;
+  --surface-rgb: 255 255 255;
+  --shade-rgb: 15 23 42;
+  --shade-strength: 0.22;
+
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-md: 0 2px 8px rgb(15 23 42 / 0.08);
+  --shadow-lg: 0 8px 24px rgb(15 23 42 / 0.1);
+}
+
 :root {
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
   --secondary: #10b981;
-  --bg-color: #0b0e14; /* Deep premium dark */
-  --bg-surface: rgba(20, 25, 35, 0.6); /* Glassmorphism base */
-  --bg-surface-hover: rgba(30, 41, 59, 0.8);
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --danger: #ef4444;
-  --font-family: 'Outfit', 'Inter', system-ui, sans-serif;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 8px 16px -4px rgba(0, 0, 0, 0.4), 0 4px 8px -4px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
-  --glow-primary: 0 0 20px rgba(99, 102, 241, 0.3);
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
+  --danger: #dc2626;
+  --warning: #d97706;
+
+  --font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+
+  /* The flat theme uses a solid accent where the old design used gradients/glows */
+  --primary-gradient: var(--primary);
+  --glow-primary: none;
+
+  /* Aliases for names used across older components */
+  --bg-card: var(--bg-surface);
+  --card-bg: var(--bg-surface);
+  --surface-color: var(--bg-surface);
+  --bg-hover: var(--bg-surface-hover);
+  --surface-hover: var(--bg-surface-hover);
+  --border: var(--border-color);
+  --border-light: var(--border-color);
+  --text-primary: var(--text-main);
+  --text-color: var(--text-main);
+  --text-secondary: var(--text-muted);
+  --primary-color: var(--primary);
+  --shadow: var(--shadow-md);
 }
 
 * {
@@ -31,10 +111,8 @@ body {
   color: var(--text-main);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
-  background-attachment: fixed;
+  font-feature-settings: 'cv11', 'ss01';
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 a {
@@ -47,10 +125,19 @@ button {
   font-family: inherit;
   border: none;
   background: none;
+  color: inherit;
 }
 
-input {
+input,
+textarea,
+select {
   font-family: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 /* Utilities */
@@ -58,124 +145,126 @@ input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1.5rem;
+  padding: 0.6rem 1.15rem;
   border-radius: var(--radius-md);
   font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 0.95rem;
-  letter-spacing: 0.3px;
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-primary {
-  background: var(--primary-gradient);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
 }
 
-.btn-primary:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 10px 20px -10px rgba(168, 85, 247, 0.6), var(--glow-primary);
-  border-color: rgba(255, 255, 255, 0.3);
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
 }
 
 .btn-secondary {
-  background-color: var(--bg-surface-hover);
+  background-color: var(--bg-surface);
   color: var(--text-main);
-  border: 1px solid var(--border-color);
-  backdrop-filter: blur(8px);
+  border-color: var(--border-strong);
 }
 
-.btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--bg-surface-hover);
 }
 
 .btn-danger {
-  background-color: rgba(239, 68, 68, 0.1);
+  background-color: rgb(220 38 38 / 0.1);
   color: var(--danger);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-color: rgb(220 38 38 / 0.25);
 }
 
-.btn-danger:hover {
+.btn-danger:hover:not(:disabled) {
   background-color: var(--danger);
-  color: white;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-  transform: translateY(-2px);
+  color: #ffffff;
 }
 
 .input-field {
   width: 100%;
-  padding: 0.85rem 1.2rem;
-  background-color: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border-color);
+  padding: 0.65rem 0.9rem;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
   color: var(--text-main);
   outline: none;
-  transition: all 0.3s ease;
-  font-size: 0.95rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  font-size: 0.9rem;
+}
+
+.input-field::placeholder {
+  color: var(--text-muted);
 }
 
 .input-field:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-  background-color: rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 0 3px rgb(var(--primary-rgb) / 0.18);
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .form-label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  letter-spacing: 0.5px;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-soft);
 }
 
 .card {
   background: var(--bg-surface);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
-  padding: 2rem;
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease;
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 25px 30px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.1);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--border-strong);
 }
 
 .glass-panel {
   background: var(--bg-surface);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-color);
 }
 
+/* Kept for existing markup; the official theme uses plain accent text instead of gradients */
 .text-gradient {
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-image: var(--primary-gradient);
+  color: var(--text-main);
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(15px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.3s ease-out forwards;
 }
 
 .delay-100 { animation-delay: 100ms; }
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
