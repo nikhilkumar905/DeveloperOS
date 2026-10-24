@@ -6,10 +6,9 @@ langchain==0.2.6
 langchain-community==0.2.6
 langchain-core==0.2.11
 langchain-groq==0.1.5
-langchain-huggingface==0.0.3
 chromadb==0.5.3
 langchain-chroma==0.1.2
 python-dotenv==1.0.1
-sentence-transformers==3.0.1
 python-jose[cryptography]==3.3.0
 posthog<6  # chromadb 0.5.x breaks with posthog>=6 (telemetry errors on every call)
+# Embeddings run on ONNX Runtime, which chromadb already installs (no PyTorch needed)

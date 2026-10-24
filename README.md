@@ -147,7 +147,7 @@ flowchart LR
 |---|---|
 | **Frontend** | React 19, TypeScript, Vite 8, React Router 7, Recharts, react-force-graph, Axios, lucide-react |
 | **Main API** | Python 3.12, FastAPI, Beanie ODM on Motor (async MongoDB), Pydantic v2, python-jose (JWT), bcrypt, slowapi (rate limiting), httpx, ReportLab (PDF) |
-| **AI / RAG** | LangChain, ChromaDB, sentence-transformers `all-MiniLM-L6-v2` embeddings, BM25 + embedding hybrid retrieval, Groq (`openai/gpt-oss-20b`) |
+| **AI / RAG** | LangChain, ChromaDB, `all-MiniLM-L6-v2` embeddings on ONNX Runtime (no PyTorch), BM25 + embedding hybrid retrieval, Groq (`openai/gpt-oss-20b`) |
 | **Data** | MongoDB 7 (local container or MongoDB Atlas) |
 | **Auth** | Email OTP, Google OpenID Connect (PKCE), rotating refresh tokens, SMTP email |
 | **Infrastructure** | Docker, Docker Compose, Nginx, GitHub Actions CI |
@@ -196,7 +196,7 @@ DeveloperOS/
 
 ## 🐳 Quick start with Docker
 
-**Prerequisites:** Docker with the Compose plugin (`docker compose version`). Allow about 4 GB of disk for the images, since the chat image includes PyTorch and the embedding model.
+**Prerequisites:** Docker with the Compose plugin (`docker compose version`). Allow about 2 GB of disk for the images.
 
 ```bash
 # 1. Get the code
@@ -294,13 +294,12 @@ python -m uvicorn main:app --port 6500 --reload
 cd chat-service
 python -m venv .venv
 source .venv/bin/activate              # Windows: .venv\Scripts\activate
-pip install torch --index-url https://download.pytorch.org/whl/cpu   # CPU-only PyTorch (much smaller)
 pip install -r requirements.txt
 cp .env.example .env                    # same MONGO_URI and the SAME JWT_SECRET as the API, plus GROQ_API_KEY
 python main.py                          # serves on :6502
 ```
 
-The first start downloads the embedding model (~90 MB).
+The first start downloads the embedding model (~80 MB, ONNX format).
 
 ### 3. Frontend (`frontend/`)
 
@@ -355,7 +354,7 @@ Docker reads the root `.env` (template: `.env.example`). Without Docker, each se
 | `CHAT_PER_MINUTE` / `CHAT_PER_DAY` / `INDEX_PER_HOUR` | chat | No | Per-user assistant limits (10 / 200 / 6). |
 | `PUBLIC_API_URL` / `PUBLIC_CHAT_API_URL` | frontend build (Docker) | No | API URLs compiled into the frontend. Must be reachable from the browser. |
 | `VITE_API_URL` / `VITE_CHAT_API_URL` | frontend (no Docker) | No | Same as above, for `frontend/.env`. |
-| `CHAT_PORT` / `CHROMA_DIR` / `EMBEDDING_MODEL` | chat | No | Port (6502), vector index folder, embedding model. |
+| `CHAT_PORT` / `CHROMA_DIR` / `EMBED_THREADS` | chat | No | Port (6502), vector index folder, CPU threads used for embeddings (default 2). |
 
 ---
 

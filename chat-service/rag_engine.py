@@ -6,15 +6,17 @@ import re
 os.environ.setdefault("ANONYMIZED_TELEMETRY", "False")
 
 from typing import List, Tuple
+import numpy as np
 from langchain_core.documents import Document
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_core.embeddings import Embeddings
+from chromadb.utils.embedding_functions import ONNXMiniLM_L6_V2
 from langchain_chroma import Chroma
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 
 PERSIST_DIR = os.getenv("CHROMA_DIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "chroma_db"))
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+EMBEDDING_MODEL = "all-MiniLM-L6-v2 (ONNX)"
 # llama-3.1-8b-instant was retired by Groq; gpt-oss-20b is the fast general model now
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 
@@ -28,9 +30,57 @@ MAX_CATALOG_CHARS = 4000  # the repository catalog lists every repo, so it gets 
 MAX_HISTORY_TURNS = 6
 
 # Bump when indexer.py changes what gets indexed, so existing users are re-indexed automatically
-INDEX_VERSION = 3
+INDEX_VERSION = 5
 
-embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
+
+
+class MiniLMEmbeddings(Embeddings):
+    """all-MiniLM-L6-v2 run with ONNX Runtime instead of PyTorch.
+
+    Uses the model files ChromaDB ships/downloads, with a lean inference session: no memory arena,
+    few threads and small batches. Peak memory while indexing a profile drops from ~500 MB to ~270 MB,
+    which keeps the service inside small instances such as Render's 512 MB free tier. Retrieval quality
+    is unchanged on the evaluation set (see chat-service/eval)."""
+
+    MAX_TOKENS = 256  # same as sentence-transformers' max_seq_length for this model
+    BATCH_SIZE = 4
+
+    def __init__(self):
+        import onnxruntime as ort
+        from tokenizers import Tokenizer
+
+        files = ONNXMiniLM_L6_V2()
+        files._download_model_if_not_exists()
+        folder = files.DOWNLOAD_PATH / files.EXTRACTED_FOLDER_NAME
+        self._tokenizer = Tokenizer.from_file(str(folder / "tokenizer.json"))
+        self._tokenizer.enable_truncation(max_length=self.MAX_TOKENS)
+        self._tokenizer.enable_padding(pad_id=0, pad_token="[PAD]")
+
+        options = ort.SessionOptions()
+        options.enable_cpu_mem_arena = False  # release memory after each batch instead of pooling it
+        options.intra_op_num_threads = int(os.getenv("EMBED_THREADS", "2"))
+        options.inter_op_num_threads = 1
+        self._session = ort.InferenceSession(str(folder / "model.onnx"), sess_options=options, providers=["CPUExecutionProvider"])
+
+    def _embed(self, texts: List[str]) -> List[List[float]]:
+        vectors = []
+        for i in range(0, len(texts), self.BATCH_SIZE):
+            encoded = self._tokenizer.encode_batch(texts[i:i + self.BATCH_SIZE])
+            ids = np.array([e.ids for e in encoded], dtype=np.int64)
+            mask = np.array([e.attention_mask for e in encoded], dtype=np.int64)
+            hidden = self._session.run(None, {"input_ids": ids, "attention_mask": mask, "token_type_ids": np.zeros_like(ids)})[0]
+            pooled = (hidden * mask[..., None]).sum(1) / np.clip(mask.sum(1, keepdims=True), 1e-9, None)  # mean pooling
+            vectors.extend((pooled / np.linalg.norm(pooled, axis=1, keepdims=True)).tolist())
+        return vectors
+
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        return self._embed(texts)
+
+    def embed_query(self, text: str) -> List[float]:
+        return self._embed([text])[0]
+
+
+embeddings = MiniLMEmbeddings()
 
 # Query words that point at a specific document source/type; matched against metadata
 # so e.g. "what's my gfg score" always pulls the GeeksforGeeks doc even if embeddings miss it.
