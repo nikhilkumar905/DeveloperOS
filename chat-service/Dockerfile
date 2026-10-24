@@ -39,4 +39,5 @@ EXPOSE 6502
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
   CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:6502/api/health', timeout=4).status == 200 else 1)"
 
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${CHAT_PORT}"]
+# Hosting platforms such as Render assign the port through $PORT; locally CHAT_PORT (6502) is used
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-$CHAT_PORT} --proxy-headers --forwarded-allow-ips='*'"]
