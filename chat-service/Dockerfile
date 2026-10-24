@@ -7,12 +7,16 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     ANONYMIZED_TELEMETRY=False \
     CHROMA_DIR=/data/chroma \
-    CHAT_PORT=6502
+    CHAT_PORT=6502 \
+    HNSWLIB_NO_NATIVE=1
 
 WORKDIR /app
 
-# chroma-hnswlib (pinned by chromadb) may compile from source, so a C++ compiler is installed only for
-# that step and removed in the same layer to keep the image small.
+# chroma-hnswlib (pinned by chromadb) has no prebuilt wheel for Python 3.12, so it compiles from source.
+# HNSWLIB_NO_NATIVE=1 (set above) stops it compiling with -march=native: otherwise the binary targets the
+# build machine's CPU and crashes with "Illegal instruction" on hosts whose CPU lacks those instructions
+# (seen on Render, where builds and services run on different machines). The C++ compiler is installed
+# only for this step and removed in the same layer to keep the image small.
 COPY requirements.txt .
 RUN apt-get update \
  && apt-get install -y --no-install-recommends build-essential \
