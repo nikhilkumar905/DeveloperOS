@@ -68,6 +68,10 @@ const DeveloperIntelligenceWidget: React.FC = () => {
 
   useEffect(() => {
     fetchInsights();
+    // Connecting/disconnecting a platform invalidates the cached insights server-side
+    const onIntegrationUpdated = () => fetchInsights();
+    window.addEventListener('personalos-integration-updated', onIntegrationUpdated);
+    return () => window.removeEventListener('personalos-integration-updated', onIntegrationUpdated);
   }, [fetchInsights]);
 
   if (!data && !loading && !error) return null;
@@ -75,7 +79,7 @@ const DeveloperIntelligenceWidget: React.FC = () => {
   return (
     <div className="intelligence-widget">
       <div className="intelligence-header">
-        <h2><Brain size={24} color="#a855f7" /> Developer Intelligence</h2>
+        <h2><Brain size={22} color="var(--primary)" /> Developer Intelligence</h2>
         <button 
           onClick={() => fetchInsights(true)} 
           className="refresh-btn" 
@@ -144,7 +148,7 @@ const DeveloperIntelligenceWidget: React.FC = () => {
                 </div>
               ))
             ) : (
-              <div style={{ color: '#94a3b8' }}>Connect GitHub and LeetCode to generate a roadmap.</div>
+              <div style={{ color: 'var(--text-muted)' }}>Connect GitHub, LeetCode or GeeksforGeeks to generate a roadmap.</div>
             )}
           </div>
           

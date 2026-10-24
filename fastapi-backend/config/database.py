@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "personalos")
 
 
 async def init_db():
@@ -26,9 +27,10 @@ async def init_db():
     from models.activity_session import ActivitySession
     from models.portfolio_settings import PortfolioSettings
     from models.generated_document import GeneratedDocument
+    from models.auth_tokens import EmailOtp, RefreshToken
 
     await init_beanie(
-        database=client.get_database("personalos"),
+        database=client.get_database(MONGO_DB_NAME),
         document_models=[
             User,
             IntegrationProfile,
@@ -43,6 +45,8 @@ async def init_db():
             ActivitySession,
             PortfolioSettings,
             GeneratedDocument,
+            EmailOtp,
+            RefreshToken,
         ],
     )
     print("[database] MongoDB connected and Beanie initialized.")

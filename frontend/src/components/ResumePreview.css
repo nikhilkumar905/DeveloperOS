@@ -1,0 +1,113 @@
+/*
+ * Classic one-page resume, drawn to scale of a US Letter page (612pt wide).
+ * Sizes use container-width units so 1pt in the PDF = 100/612 cqw here,
+ * keeping the preview an exact scaled copy of the exported PDF.
+ */
+.rp-page {
+  --pt: calc(100cqw / 612);
+  background: #ffffff;
+  color: #000000;
+  font-family: Helvetica, Arial, 'Liberation Sans', sans-serif;
+  aspect-ratio: 8.5 / 11;
+  /* 0.45in top/bottom, 0.5in sides, as in the PDF */
+  padding: calc(var(--pt) * 32.4) calc(var(--pt) * 36);
+  font-size: calc(var(--pt) * 9.8);
+  line-height: 1.22;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.rp-page b {
+  font-weight: 700;
+}
+
+.rp-page a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rp-page a:hover {
+  text-decoration: underline;
+}
+
+.rp-header {
+  text-align: center;
+}
+
+.rp-name {
+  font-size: calc(var(--pt) * 17);
+  font-weight: 700;
+  line-height: 1.18;
+}
+
+.rp-contact {
+  font-size: calc(var(--pt) * 9);
+  line-height: 1.22;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  column-gap: calc(var(--pt) * 9);
+}
+
+.rp-section {
+  margin-top: calc(var(--pt) * 7);
+}
+
+.rp-heading {
+  font-size: calc(var(--pt) * 12);
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0 0 calc(var(--pt) * 3);
+  padding-bottom: calc(var(--pt) * 1);
+  border-bottom: calc(var(--pt) * 0.8) solid #000000;
+  color: #000000;
+  letter-spacing: 0;
+}
+
+.rp-entry {
+  margin-bottom: calc(var(--pt) * 3);
+}
+
+.rp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: calc(var(--pt) * 8);
+}
+
+.rp-row-left {
+  flex: 1 1 70%;
+}
+
+.rp-row-right {
+  flex: 0 0 auto;
+  text-align: right;
+  max-width: 30%;
+}
+
+.rp-line {
+  margin: 0;
+}
+
+.rp-bullets {
+  margin: 0;
+  padding-left: calc(var(--pt) * 11);
+  list-style: none;
+}
+
+.rp-bullets li {
+  position: relative;
+  margin-top: calc(var(--pt) * 1);
+}
+
+.rp-bullets li::before {
+  content: '•';
+  position: absolute;
+  left: calc(var(--pt) * -8);
+}
+
+.rp-skills {
+  display: grid;
+  grid-template-columns: calc(var(--pt) * 140) 1fr;
+  row-gap: calc(var(--pt) * 1);
+}

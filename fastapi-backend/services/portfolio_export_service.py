@@ -1,12 +1,30 @@
+import re
 from datetime import datetime
+from html import escape
+from urllib.parse import quote
+
+
+def _safe_url(url: str) -> str:
+    """Only allow http(s)/data URLs into href/src attributes (blocks javascript: links)."""
+    url = (url or "").strip()
+    return escape(url) if re.match(r"^(https?://|data:image/)", url, re.I) else ""
+
+
+def _initials_avatar(name: str, color: str) -> str:
+    initials = "".join(part[0] for part in name.split()[:2]).upper() or "D"
+    svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="100%" height="100%" fill="{color}"/>'
+           f'<text x="50%" y="54%" font-family="sans-serif" font-size="160" fill="#fff" text-anchor="middle" dominant-baseline="middle">{escape(initials)}</text></svg>')
+    return "data:image/svg+xml;utf8," + quote(svg)
 
 
 def generate_portfolio_bundle_html(user, settings, github_stats, intelligence) -> str:
-    name = getattr(user, "name", None) or "Developer Name"
-    primary_color = settings.primaryColor or "#6366f1"
-    subtitle = settings.heroSubtitle or "Full Stack Software Engineer & Systems Architect"
-    bio = settings.bio or "Passionate software developer specializing in scalable cloud applications, data structures, and intuitive user experiences."
-    avatar = settings.profilePictureUrl or "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80"
+    raw_name = getattr(user, "name", None) or "Developer Name"
+    name = escape(raw_name)
+    primary_color = settings.primaryColor if re.fullmatch(r"#[0-9a-fA-F]{3,8}", settings.primaryColor or "") else "#6366f1"
+    font_family = re.sub(r"[^\w\s-]", "", settings.fontFamily or "") or "Inter"
+    subtitle = escape(settings.heroSubtitle or "Full Stack Software Engineer & Systems Architect")
+    bio = escape(settings.bio or "Passionate software developer specializing in scalable cloud applications, data structures, and intuitive user experiences.")
+    avatar = _safe_url(settings.profilePictureUrl) or _initials_avatar(raw_name, primary_color)
 
     bg_color, card_bg, text_color, text_muted = "#0f172a", "#1e293b", "#f8fafc", "#94a3b8"
     if settings.theme == "minimal-light":
@@ -18,15 +36,15 @@ def generate_portfolio_bundle_html(user, settings, github_stats, intelligence) -
     projects_html = ""
     for repo in repos[:6]:
         langs = repo.languages or ([repo.language] if repo.language else ["Code"])
-        tags_html = "".join(f'<span class="tag">{l}</span>' for l in langs)
-        link_html = f'<a href="{repo.url}" target="_blank" class="btn-link">View Repository →</a>' if repo.url else ""
+        tags_html = "".join(f'<span class="tag">{escape(l)}</span>' for l in langs)
+        link_html = f'<a href="{_safe_url(repo.url)}" target="_blank" rel="noopener" class="btn-link">View Repository →</a>' if _safe_url(repo.url) else ""
         projects_html += f"""
       <div class="project-card">
         <div class="project-header">
-          <h3>{repo.name}</h3>
+          <h3>{escape(repo.name)}</h3>
           <span class="stars">★ {repo.stars}</span>
         </div>
-        <p class="project-desc">{repo.description or 'Full stack repository engineered with clean architecture.'}</p>
+        <p class="project-desc">{escape(repo.description or 'Full stack repository engineered with clean architecture.')}</p>
         <div class="project-tags">{tags_html}</div>
         {link_html}
       </div>"""
@@ -40,7 +58,7 @@ def generate_portfolio_bundle_html(user, settings, github_stats, intelligence) -
       </div>"""
 
     strengths = intelligence.strengths if intelligence else ["System Architecture", "REST APIs", "Full Stack Development", "React", "TypeScript", "Node.js", "MongoDB"]
-    skills_html = "".join(f'<span class="skill-pill">{s}</span>' for s in strengths)
+    skills_html = "".join(f'<span class="skill-pill">{escape(s)}</span>' for s in strengths)
 
     show_skills = (settings.sectionVisibility.showSkills if settings.sectionVisibility else True)
     show_projects = (settings.sectionVisibility.showProjects if settings.sectionVisibility else True)
@@ -75,7 +93,7 @@ def generate_portfolio_bundle_html(user, settings, github_stats, intelligence) -
       --card-bg: {card_bg};
       --text: {text_color};
       --text-muted: {text_muted};
-      --font: '{settings.fontFamily or 'Inter'}', sans-serif;
+      --font: '{font_family}', sans-serif;
     }}
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{ background-color: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.6; overflow-x: hidden; }}

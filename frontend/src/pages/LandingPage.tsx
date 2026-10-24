@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Terminal, Database, Code, Shield } from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
 import './LandingPage.css';
 
 const LandingPage: React.FC = () => {
@@ -12,6 +13,7 @@ const LandingPage: React.FC = () => {
           <span>PersonalOS</span>
         </div>
         <div className="nav-links">
+          <ThemeToggle />
           <Link to="/login" className="btn btn-secondary">Login</Link>
           <Link to="/register" className="btn btn-primary">Get Started</Link>
         </div>
@@ -23,7 +25,7 @@ const LandingPage: React.FC = () => {
             The Ultimate Developer Operating System
           </h1>
           <p className="hero-subtitle animate-fade-in delay-100">
-            Unify your GitHub activity, LeetCode progress, and knowledge graph in one stunning dashboard.
+            Unify your GitHub activity, LeetCode &amp; GeeksforGeeks progress, and knowledge graph in one stunning dashboard.
           </p>
           <div className="hero-actions animate-fade-in delay-200">
             <Link to="/register" className="btn btn-primary btn-large">Start Building</Link>
@@ -35,7 +37,7 @@ const LandingPage: React.FC = () => {
           <div className="feature-card glass-panel animate-fade-in delay-100">
             <Database className="feature-icon text-primary" />
             <h3>Centralized Hub</h3>
-            <p>Connect your GitHub and LeetCode to see all your dev activity.</p>
+            <p>Connect your GitHub, LeetCode and GeeksforGeeks to see all your dev activity.</p>
           </div>
           <div className="feature-card glass-panel animate-fade-in delay-200">
             <Code className="feature-icon text-secondary" />

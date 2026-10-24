@@ -1,53 +1,88 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import { useNavigate, Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
+import { AuthContext, authHttp } from '../context/AuthContext';
+import type { Session } from '../context/AuthContext';
 import { Terminal } from 'lucide-react';
-import { API_BASE_URL } from '../lib/api';
+import AuthTopBar from '../components/AuthTopBar';
+import { GoogleButton, Divider, useAuthConfig } from '../components/AuthWidgets';
+import { getErrorMessage } from '../lib/api';
+import './Auth.css';
+
+const ERROR_MESSAGES: Record<string, string> = {
+  google_cancelled: 'Google sign-in was cancelled.',
+  google_failed: "We couldn't sign you in with Google. Please try again.",
+  google_state: 'Your Google sign-in session expired. Please try again.',
+  google_conflict: 'This email is already linked to a different Google account.',
+  google_not_configured: "Google sign-in isn't set up on this server yet.",
+};
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const { login } = useContext(AuthContext);
+  const [submitting, setSubmitting] = useState(false);
+  const [params] = useSearchParams();
+  const location = useLocation();
+  const [error, setError] = useState(ERROR_MESSAGES[params.get('error') || ''] || '');
+  const success = (location.state as { message?: string } | null)?.message;
+  const { login, user, isLoading } = useContext(AuthContext);
+  const config = useAuthConfig();
   const navigate = useNavigate();
+
+  if (!isLoading && user) return <Navigate to="/dashboard" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
+    setError('');
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });
+      const res = await authHttp.post<Session>('/api/auth/login', { email, password });
       login(res.data);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid credentials');
+      setError(getErrorMessage(err, 'Invalid email or password'));
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-color)' }}>
-      <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '400px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <Terminal style={{ color: 'var(--primary)', width: '48px', height: '48px', margin: '0 auto' }} />
-          <h2 style={{ fontSize: '1.5rem', marginTop: '1rem' }}>Welcome Back</h2>
-          <p style={{ color: 'var(--text-muted)' }}>Login to access your workspace</p>
+    <div className="auth-page">
+      <AuthTopBar />
+      <div className="card auth-card animate-fade-in">
+        <div className="auth-heading">
+          <Link to="/" aria-label="Back to home" style={{ display: 'inline-block' }}>
+            <Terminal style={{ color: 'var(--primary)', width: '44px', height: '44px' }} />
+          </Link>
+          <h2>Welcome back</h2>
+          <p>Log in to access your workspace</p>
         </div>
-        
-        {error && <div style={{ color: 'white', backgroundColor: 'var(--danger)', padding: '0.75rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem' }}>{error}</div>}
-        
+
+        {success && <div className="auth-success" role="status">{success}</div>}
+        {error && <div className="auth-error" role="alert">{error}</div>}
+
+        <GoogleButton enabled={!!config?.google} />
+        <Divider text="or log in with email" />
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="input-field" placeholder="Enter your email" />
+            <label className="form-label" htmlFor="login-email">Email</label>
+            <input id="login-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" className="input-field" placeholder="you@example.com" />
           </div>
           <div className="form-group">
-            <label className="form-label">Password</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="input-field" placeholder="Enter your password" />
+            <label className="form-label" htmlFor="login-password">Password</label>
+            <input id="login-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" className="input-field" placeholder="Enter your password" />
           </div>
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>Login</button>
+          <div className="auth-row">
+            <span />
+            <Link to="/forgot-password" className="auth-link">Forgot password?</Link>
+          </div>
+          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={submitting}>
+            {submitting ? 'Logging in…' : 'Log in'}
+          </button>
         </form>
-        
-        <div style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-          Don't have an account? <Link to="/register" style={{ color: 'var(--primary)' }}>Register here</Link>
+
+        <div className="auth-footer">
+          Don't have an account? <Link to="/register" className="auth-link">Create one</Link>
         </div>
       </div>
     </div>

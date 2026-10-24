@@ -7,7 +7,7 @@ import { WidgetRegistry } from '../components/WidgetRegistry';
 import ActivityWidget from '../components/ActivityWidget';
 import PerformanceChartWidget from '../components/PerformanceChartWidget';
 import ActivityHeatmapWidget from '../components/ActivityHeatmapWidget';
-import { API_BASE_URL } from '../lib/api';
+import { API_BASE_URL, parseUtc } from '../lib/api';
 import './DashboardHome.css';
 
 interface Stats {
@@ -19,6 +19,14 @@ interface Stats {
     solvedMedium: number;
     solvedHard: number;
   };
+  gfgUsername?: string | null;
+  gfgStats?: {
+    solvedTotal: number;
+    solvedEasy: number;
+    solvedMedium: number;
+    solvedHard: number;
+    codingScore: number;
+  } | null;
   activeProjectsCount: number;
 }
 
@@ -43,7 +51,7 @@ interface TimelineEvent {
   _id: string;
   title: string;
   description: string;
-  type: 'github' | 'leetcode' | 'milestone';
+  type: 'github' | 'leetcode' | 'gfg' | 'milestone';
   timestamp: string;
 }
 
@@ -160,6 +168,21 @@ const DashboardHome: React.FC = () => {
         </div>
 
         <div className="card glass-panel stats-card">
+          <div className="stats-icon gfg-icon">
+            <Code2 size={24} />
+          </div>
+          <div className="stats-info">
+            <div className="stats-label">GeeksforGeeks Progress</div>
+            <div className="stats-value">
+              {stats?.gfgStats?.solvedTotal || 0} Solved
+            </div>
+            <div className="stats-subtext">
+              Score: {stats?.gfgStats?.codingScore || 0} | M: {stats?.gfgStats?.solvedMedium || 0} | H: {stats?.gfgStats?.solvedHard || 0}
+            </div>
+          </div>
+        </div>
+
+        <div className="card glass-panel stats-card">
           <div className="stats-icon projects-icon">
             <GitBranch size={24} />
           </div>
@@ -170,6 +193,13 @@ const DashboardHome: React.FC = () => {
         </div>
       </div>
 
+      {/* Coding profiles: GitHub, LeetCode, GeeksforGeeks side by side */}
+      <div className="profiles-row">
+        {WidgetRegistry.filter(w => w.region === 'profiles').map(Widget => (
+          <Widget.component key={Widget.id} />
+        ))}
+      </div>
+
       {/* Full Width Widgets */}
       {WidgetRegistry.filter(w => w.region === 'full').map(Widget => (
         <Widget.component key={Widget.id} />
@@ -178,14 +208,16 @@ const DashboardHome: React.FC = () => {
       {/* Main Content Layout */}
       <div className="dashboard-layout-body">
         
-        {/* Left Side: Goals & Notifications */}
+        {/* Left: charts and goals */}
         <div className="dashboard-main-left">
-          
+          <PerformanceChartWidget />
+          <ActivityHeatmapWidget />
+
           {/* Goals Widget */}
           <div className="card widget-box">
             <div className="widget-header">
               <h3>Active Goals</h3>
-              <button className="btn btn-secondary btn-icon" onClick={() => setIsGoalModalOpen(true)}>
+              <button className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', gap: '0.35rem', fontSize: '0.85rem' }} onClick={() => setIsGoalModalOpen(true)}>
                 <Plus size={16} /> Add Goal
               </button>
             </div>
@@ -215,6 +247,11 @@ const DashboardHome: React.FC = () => {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Right: tracker, notifications, timeline (timeline stretches and scrolls so both columns end level) */}
+        <div className="dashboard-main-right">
+          <ActivityWidget />
 
           {/* Notifications Panel */}
           <div className="card widget-box">
@@ -243,22 +280,8 @@ const DashboardHome: React.FC = () => {
               )}
             </div>
           </div>
-          
-          <PerformanceChartWidget />
-          <ActivityWidget />
-        </div>
 
-        {/* Right Side: Activity Timeline */}
-        <div className="dashboard-main-right">
-          {WidgetRegistry.filter(w => w.region !== 'full').map(Widget => (
-            <Widget.component key={Widget.id} />
-          ))}
-          
-          <div style={{ marginTop: '1.25rem' }}>
-            <ActivityHeatmapWidget />
-          </div>
-          
-          <div className="card widget-box timeline-widget" style={{ marginTop: '1.25rem' }}>
+          <div className="card widget-box timeline-widget">
             <div className="widget-header">
               <h3>Activity Timeline</h3>
               <Calendar size={18} className="text-muted" />
@@ -274,7 +297,7 @@ const DashboardHome: React.FC = () => {
                     <div className="timeline-content">
                       <h4>{event.title}</h4>
                       <p>{event.description}</p>
-                      <span className="timeline-time">{new Date(event.timestamp).toLocaleString()}</span>
+                      <span className="timeline-time">{parseUtc(event.timestamp).toLocaleString()}</span>
                     </div>
                   </div>
                 ))

@@ -1,79 +1,181 @@
 /* eslint-disable react-refresh/only-export-components */
-/* eslint-disable react/only-export-components */
-import { createContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { ReactNode } from 'react';
 import axios from 'axios';
+import type { AxiosRequestConfig } from 'axios';
+import { API_BASE_URL, CHAT_API_URL } from '../lib/api';
 
-interface User {
+export interface User {
   _id: string;
   name: string;
   email: string;
+  emailVerified?: boolean;
+  hasPassword?: boolean;
+  googleLinked?: boolean;
+}
+
+/** What the backend returns from login / register-verify / refresh. */
+export interface Session {
+  accessToken: string;
+  expiresIn: number;
+  user: User;
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (userData: any) => void;
-  logout: () => void;
   isLoading: boolean;
+  login: (session: Session) => void;
+  logout: () => Promise<void>;
+  /** A non-expired access token, refreshing first if needed (null when logged out). */
+  getValidToken: () => Promise<string | null>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   token: null,
-  login: () => {},
-  logout: () => {},
   isLoading: true,
+  login: () => {},
+  logout: async () => {},
+  getValidToken: async () => null,
 });
+
+// Separate instance so auth calls never pass through the interceptors below (no refresh loops)
+const authHttp = axios.create({ baseURL: API_BASE_URL, withCredentials: true, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+
+const NO_AUTH_PATHS = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/logout', '/api/auth/password/forgot', '/api/auth/password/reset', '/api/auth/config', '/api/auth/google'];
+const isOurApi = (url = '') => url.startsWith(API_BASE_URL) || url.startsWith(CHAT_API_URL);
+const needsAuth = (url = '') => isOurApi(url) && !NO_AUTH_PATHS.some(p => url.includes(p));
+
+// Lets other tabs know about logout so they drop their in-memory token too
+const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('devos-auth') : null;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const storedUserInfo = localStorage.getItem('userInfo');
-    if (storedUserInfo) {
-      const parsedInfo = JSON.parse(storedUserInfo);
-      setUser({ _id: parsedInfo._id, name: parsedInfo.name, email: parsedInfo.email });
-      setToken(parsedInfo.token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${parsedInfo.token}`;
-    }
-    setIsLoading(false);
-  }, []);
+  // Refs mirror state so interceptors (registered once) always see current values
+  const tokenRef = useRef<string | null>(null);
+  const expiresAtRef = useRef(0);
+  const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const refreshInFlight = useRef<Promise<string | null> | null>(null);
 
-  const login = (userData: any) => {
-    setUser({ _id: userData._id, name: userData.name, email: userData.email });
-    setToken(userData.token);
-    localStorage.setItem('userInfo', JSON.stringify(userData));
-    axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
-  };
-
-  const logout = useCallback(() => {
-    setUser(null);
+  const clearSession = useCallback(() => {
+    tokenRef.current = null;
+    expiresAtRef.current = 0;
+    if (refreshTimer.current) clearTimeout(refreshTimer.current);
     setToken(null);
-    localStorage.removeItem('userInfo');
-    delete axios.defaults.headers.common['Authorization'];
+    setUser(null);
   }, []);
 
+  // The timer calls through a ref so applySession and refresh don't depend on each other
+  const refreshRef = useRef<() => Promise<string | null>>(async () => null);
+
+  const applySession = useCallback((session: Session) => {
+    tokenRef.current = session.accessToken;
+    // Treat the token as expired a minute early so requests never race the expiry
+    const lifetimeMs = Math.max(30, session.expiresIn - 60) * 1000;
+    expiresAtRef.current = Date.now() + lifetimeMs;
+    setToken(session.accessToken);
+    setUser(session.user);
+    if (refreshTimer.current) clearTimeout(refreshTimer.current);
+    refreshTimer.current = setTimeout(() => { refreshRef.current(); }, lifetimeMs);
+  }, []);
+
+  const refresh = useCallback((): Promise<string | null> => {
+    // Concurrent callers share one request (the refresh token rotates on every use)
+    if (!refreshInFlight.current) {
+      refreshInFlight.current = authHttp.post<Session>('/api/auth/refresh')
+        .then(res => {
+          applySession(res.data);
+          return res.data.accessToken;
+        })
+        .catch(() => {
+          clearSession();
+          return null;
+        })
+        .finally(() => {
+          refreshInFlight.current = null;
+        });
+    }
+    return refreshInFlight.current;
+  }, [applySession, clearSession]);
+
   useEffect(() => {
-    const interceptor = axios.interceptors.response.use(
+    refreshRef.current = refresh;
+  }, [refresh]);
+
+  const getValidToken = useCallback(async () => {
+    if (tokenRef.current && Date.now() < expiresAtRef.current) return tokenRef.current;
+    return refresh();
+  }, [refresh]);
+
+  const login = useCallback((session: Session) => {
+    applySession(session);
+  }, [applySession]);
+
+  const logout = useCallback(async () => {
+    try {
+      await authHttp.post('/api/auth/logout');
+    } catch {
+      // Clearing local state below is what matters; the server-side token expires anyway
+    }
+    clearSession();
+    channel?.postMessage('logout');
+  }, [clearSession]);
+
+  // Restore the session from the httpOnly refresh cookie on page load
+  useEffect(() => {
+    try {
+      localStorage.removeItem('userInfo'); // tokens used to be stored here; never again
+    } catch {
+      // storage unavailable
+    }
+    refresh().finally(() => setIsLoading(false));
+    if (channel) {
+      channel.onmessage = (e) => { if (e.data === 'logout') clearSession(); };
+    }
+    return () => {
+      if (refreshTimer.current) clearTimeout(refreshTimer.current);
+    };
+  }, [refresh, clearSession]);
+
+  // Attach a fresh token to every call to our APIs, and retry once after refreshing on 401
+  useEffect(() => {
+    const requestInterceptor = axios.interceptors.request.use(async (config) => {
+      if (needsAuth(config.url)) {
+        const fresh = await getValidToken();
+        if (fresh) config.headers.set('Authorization', `Bearer ${fresh}`);
+      }
+      return config;
+    });
+    const responseInterceptor = axios.interceptors.response.use(
       (response) => response,
-      (error) => {
-        if (error.response && error.response.status === 401) {
-          logout();
+      async (error) => {
+        const config = error.config as (AxiosRequestConfig & { _retried?: boolean }) | undefined;
+        if (error.response?.status === 401 && config && needsAuth(config.url) && !config._retried) {
+          config._retried = true;
+          const fresh = await refresh();
+          if (fresh) {
+            config.headers = { ...(config.headers || {}), Authorization: `Bearer ${fresh}` };
+            return axios(config);
+          }
         }
         return Promise.reject(error);
       }
     );
     return () => {
-      axios.interceptors.response.eject(interceptor);
+      axios.interceptors.request.eject(requestInterceptor);
+      axios.interceptors.response.eject(responseInterceptor);
     };
-  }, [logout]);
+  }, [getValidToken, refresh]);
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, logout, getValidToken }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
+export { authHttp };

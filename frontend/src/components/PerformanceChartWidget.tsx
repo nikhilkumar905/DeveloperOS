@@ -89,15 +89,15 @@ const PerformanceChartWidget: React.FC = () => {
             <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
                 </linearGradient>
                 <linearGradient id="colorProblems" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
                   <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.1)" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
               <XAxis 
                 dataKey="date" 
                 tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { weekday: 'short' })}
@@ -129,10 +129,10 @@ const PerformanceChartWidget: React.FC = () => {
                 yAxisId="left"
                 type="monotone" 
                 dataKey="hoursCoded" 
-                stroke="#6366f1" 
+                stroke="var(--primary)" 
                 fillOpacity={1} 
                 fill="url(#colorHours)" 
-                activeDot={{ r: 6, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 }}
+                activeDot={{ r: 6, fill: 'var(--primary)', stroke: 'var(--bg-surface)', strokeWidth: 2 }}
               />
               <Area 
                 yAxisId="right"
@@ -141,7 +141,7 @@ const PerformanceChartWidget: React.FC = () => {
                 stroke="#10b981" 
                 fillOpacity={1} 
                 fill="url(#colorProblems)"
-                activeDot={{ r: 6, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }}
+                activeDot={{ r: 6, fill: '#10b981', stroke: 'var(--bg-surface)', strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>

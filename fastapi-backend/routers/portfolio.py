@@ -9,6 +9,9 @@ from models.developer_intelligence import DeveloperIntelligence
 from models.generated_document import GeneratedDocument
 from services.portfolio_export_service import generate_portfolio_bundle_html
 from middleware.auth import get_current_user
+from routers.resume import apply_updates
+
+EDITABLE_FIELDS = {"theme", "primaryColor", "fontFamily", "heroSubtitle", "bio", "profilePictureUrl", "sectionVisibility"}
 
 router = APIRouter(prefix="/api/portfolio", tags=["portfolio"])
 
@@ -28,10 +31,8 @@ async def update_portfolio_settings(body: dict, current_user: User = Depends(get
     uid = current_user.id
     settings = await PortfolioSettings.find_one(PortfolioSettings.user == uid)
     if not settings:
-        raise HTTPException(status_code=404, detail="Portfolio settings not found")
-    for key, value in body.items():
-        if hasattr(settings, key):
-            setattr(settings, key, value)
+        settings = PortfolioSettings(user=uid)
+    apply_updates(settings, body, EDITABLE_FIELDS)
     await settings.save()
     return settings.model_dump(by_alias=True)
 

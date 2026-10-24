@@ -16,9 +16,8 @@
 .resume-title h1 {
   font-size: 1.75rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
 }
 
 .resume-title p {
@@ -33,28 +32,27 @@
 }
 
 .btn-infer {
-  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-  color: white;
+  background: var(--primary);
+  color: var(--on-primary);
   border-radius: var(--radius-md);
   padding: 0.65rem 1.25rem;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 15px rgb(var(--primary-rgb) / 0.3);
   transition: all 0.2s;
   border: none;
   cursor: pointer;
 }
 
 .btn-infer:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 6px 20px rgb(var(--primary-rgb) / 0.4);
 }
 
 .btn-export {
-  background: #10b981;
-  color: white;
+  background: #059669;
+  color: #ffffff;
   border-radius: var(--radius-md);
   padding: 0.65rem 1.25rem;
   font-weight: 600;
@@ -72,7 +70,8 @@
 
 .resume-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0, …) stops the editor's content from squeezing the preview column */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 2rem;
   align-items: start;
 }
@@ -90,11 +89,10 @@
 }
 
 .ats-scorecard {
-  background: rgba(30, 41, 59, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgb(var(--surface-rgb) / 0.7);
+  border: 1px solid rgb(var(--tint-rgb) / 0.08);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
-  backdrop-filter: blur(10px);
 }
 
 .ats-header {
@@ -118,7 +116,7 @@
 
 .ats-progress {
   height: 8px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgb(var(--tint-rgb) / 0.1);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 1rem;
@@ -126,7 +124,7 @@
 
 .ats-progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #6366f1, #10b981);
+  background: var(--primary);
   border-radius: 4px;
   transition: width 0.5s ease;
 }
@@ -152,7 +150,7 @@
 }
 
 .form-tab-btn.active {
-  background: rgba(99, 102, 241, 0.15);
+  background: rgb(var(--primary-rgb) / 0.15);
   color: var(--primary);
 }
 
@@ -179,11 +177,11 @@
 }
 
 .form-group input, .form-group textarea, .form-group select {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgb(var(--surface-rgb) / 0.6);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 0.65rem 0.85rem;
-  color: white;
+  color: var(--text-main);
   font-size: 0.9rem;
 }
 
@@ -212,87 +210,10 @@
 }
 
 .classic-paper {
-  background: white;
-  color: #0f172a;
-  padding: 2.2rem 2.4rem;
+  /* Container for ResumePreview's page-relative (cqw) sizing */
+  container-type: inline-size;
+  padding: 0;
   border-radius: 4px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-  min-height: 842px; /* A4 aspect ratio */
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.paper-header-classic {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  margin-bottom: 0.2rem;
-}
-
-.classic-name {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #000000;
-  letter-spacing: 0.5px;
-  margin: 0;
-}
-
-.classic-contact {
-  font-size: 0.8rem;
-  color: #334155;
-  line-height: 1.3;
-}
-
-.classic-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.classic-section-title {
-  font-size: 0.92rem;
-  font-weight: 800;
-  color: #000000;
-  border-bottom: 1.5px solid #000000;
-  padding-bottom: 0.15rem;
-  letter-spacing: 0.3px;
-}
-
-.classic-body {
-  font-size: 0.84rem;
-  color: #1e293b;
-  line-height: 1.4;
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-}
-
-.classic-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.classic-item-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: 0.85rem;
-}
-
-.classic-bold {
-  font-weight: 700;
-  color: #000000;
-}
-
-.classic-bullets {
-  padding-left: 0.8rem;
-  font-size: 0.84rem;
-  color: #1e293b;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgb(var(--surface-rgb) / 0.08), 0 12px 32px rgb(var(--surface-rgb) / 0.18);
 }

@@ -65,11 +65,15 @@ const ActivityWidget: React.FC = () => {
 
   const [copied, setCopied] = useState(false);
 
-  const handleCopyToken = () => {
-    if (token) {
-      navigator.clipboard.writeText(token);
+  // The extension gets its own token that can only log/read activity — never the session token
+  const handleCopyToken = async () => {
+    try {
+      const res = await axios.post(`${API_BASE_URL}/api/auth/extension-token`);
+      await navigator.clipboard.writeText(res.data.token);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Could not create extension token', err);
     }
   };
 
@@ -112,7 +116,7 @@ const ActivityWidget: React.FC = () => {
               cursor: 'pointer',
               transition: 'all 0.2s',
             }}
-            title="Copy JWT token for Chrome Extension"
+            title="Copy an activity-only token for the Chrome extension"
           >
             {copied ? '✅ Copied Token!' : '🔑 Copy Token'}
           </button>

@@ -32,8 +32,17 @@ async def calculate_developer_intelligence(github_stats, integration_profile) ->
         lc_solved = integration_profile.leetcodeStats.solvedTotal
         lc_streak = integration_profile.leetcodeStats.streak
         lc_rating = integration_profile.leetcodeStats.contestRating
-        
-    prompt = f"""You are an expert Developer Intelligence AI evaluating a software engineer's profile based strictly on their actual GitHub and LeetCode activity.
+
+    gfg = integration_profile.gfgStats if integration_profile and integration_profile.gfgUsername else None
+    gfg_section = "Not connected"
+    if gfg:
+        gfg_section = (
+            f"Solved: {gfg.solvedTotal} (School {gfg.solvedSchool}, Basic {gfg.solvedBasic}, Easy {gfg.solvedEasy}, "
+            f"Medium {gfg.solvedMedium}, Hard {gfg.solvedHard}), Coding Score: {gfg.codingScore}, "
+            f"Longest POTD Streak: {gfg.longestStreak}, Languages: {', '.join(gfg.languages.keys()) or 'Unknown'}"
+        )
+
+    prompt = f"""You are an expert Developer Intelligence AI evaluating a software engineer's profile based strictly on their actual GitHub, LeetCode and GeeksforGeeks activity.
 
 GITHUB STATS:
 - Commits: {total_commits}
@@ -45,6 +54,9 @@ LEETCODE STATS:
 - Solved: {lc_solved}
 - Streak: {lc_streak}
 - Contest Rating: {lc_rating}
+
+GEEKSFORGEEKS STATS:
+- {gfg_section}
 
 Based entirely on this context, output a JSON object exactly matching this schema:
 {{
@@ -79,45 +91,136 @@ Based entirely on this context, output a JSON object exactly matching this schem
 }}
 
 Important Guidelines:
-1. ONLY include technologies and skills directly evident from their repositories and LeetCode stats.
+1. ONLY include technologies and skills directly evident from their repositories and LeetCode/GeeksforGeeks stats.
 2. Link specific "Technology" nodes to high-level "Concept" or "Skill" nodes in the graph. Create 10-25 nodes depending on the variety of their repos.
-3. Be brutally honest in scores. If they have 0 Leetcode solved, DSA score must be very low. If they have no backend repos, backend score should be low.
+3. Be brutally honest in scores. If they have 0 LeetCode and 0 GeeksforGeeks problems solved, DSA score must be very low. If they have no backend repos, backend score should be low.
 4. Output ONLY valid JSON.
 """
 
+    context = {
+        "repos": repos, "total_commits": total_commits, "total_prs": total_prs,
+        "dsa_solved": lc_solved + (gfg.solvedTotal if gfg else 0),
+        "hard_solved": (integration_profile.leetcodeStats.solvedHard if integration_profile else 0) + (gfg.solvedHard if gfg else 0),
+    }
+
+    try:
+        data = await ask_groq_json(prompt)
+    except Exception as e:
+        print(f"[analytics] LLM scoring unavailable, using heuristic fallback: {e}")
+        data = _heuristic_intelligence(context)
+
+    scores = data.get("scores") if isinstance(data.get("scores"), dict) else {}
+    data["scores"] = {k: _clamp_score(scores.get(k, 0)) for k in SCORE_KEYS}
+    for key in ("strengths", "weaknesses", "recommendations", "roadmap"):
+        value = data.get(key)
+        data[key] = [str(v) for v in value] if isinstance(value, list) else []
+
+    if not isinstance(data.get("knowledge_graph"), dict) or "nodes" not in data["knowledge_graph"]:
+        data["knowledge_graph"] = {"nodes": [], "edges": []}
+
+    return data
+
+
+SCORE_KEYS = [
+    "dsa", "frontend", "backend", "fullStack", "devops", "aiMl", "database", "security",
+    "cloud", "consistency", "productivity", "interviewReadiness", "overallScore",
+]
+
+
+def _clamp_score(value: Any) -> int:
+    try:
+        return max(0, min(100, round(float(value))))
+    except (TypeError, ValueError):
+        return 0
+
+
+async def ask_groq_json(prompt: str) -> Dict[str, Any]:
     groq_key = os.getenv("GROQ_API_KEY")
     if not groq_key:
         raise ValueError("GROQ_API_KEY is not set")
-        
-    async with httpx.AsyncClient(timeout=30.0) as client:
+
+    async with httpx.AsyncClient(timeout=60.0) as client:
         resp = await client.post(
             "https://api.groq.com/openai/v1/chat/completions",
             json={
-                "model": "llama-3.1-8b-instant",
+                # llama-3.1-8b-instant was retired by Groq
+                "model": os.getenv("GROQ_MODEL", "openai/gpt-oss-20b"),
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0.2,
+                "max_tokens": 4000,
+                "reasoning_effort": "low",
                 "response_format": {"type": "json_object"},
             },
             headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
         )
-        
     resp.raise_for_status()
-    parsed = resp.json()["choices"][0]["message"]["content"]
-    data = json.loads(parsed)
-    
-    # Ensure all required score keys exist with defaults
-    default_scores = {
-        "dsa": 0, "frontend": 0, "backend": 0, "fullStack": 0, "devops": 0,
-        "aiMl": 0, "database": 0, "security": 0, "cloud": 0, "consistency": 0,
-        "productivity": 0, "interviewReadiness": 0, "overallScore": 0
-    }
-    s = data.get("scores", {})
-    for k in default_scores:
-        if k not in s:
-            s[k] = 0
-    data["scores"] = s
-    
-    if "knowledge_graph" not in data or "nodes" not in data["knowledge_graph"]:
-        data["knowledge_graph"] = {"nodes": [], "edges": []}
-        
+    data = json.loads(resp.json()["choices"][0]["message"]["content"])
+    if not isinstance(data, dict):
+        raise ValueError("LLM returned non-object JSON")
     return data
+
+
+FRONTEND_HINTS = {"javascript", "typescript", "html", "css", "react", "vue", "svelte", "next", "tailwindcss"}
+BACKEND_HINTS = {"python", "java", "go", "express", "fastapi", "django", "flask", "spring", "node", "mongoose", "c#"}
+DB_HINTS = {"mongoose", "mongodb", "pg", "mysql", "prisma", "redis", "sqlalchemy", "sql"}
+AI_HINTS = {"jupyter notebook", "langchain", "transformers", "torch", "tensorflow", "scikit-learn", "openai", "groq"}
+
+
+def _heuristic_intelligence(ctx: Dict[str, Any]) -> Dict[str, Any]:
+    """Deterministic scores so insights still work when the LLM is unavailable."""
+    tokens = set()
+    for r in ctx["repos"]:
+        tokens.update(t.lower() for t in r["topics_and_languages"])
+        tokens.update(d.lower() for d in r["dependencies"])
+        tokens.add(r["language"].lower())
+
+    def coverage(hints: set, per_hit: int = 25) -> int:
+        return min(100, len(tokens & hints) * per_hit)
+
+    solved = ctx["dsa_solved"]
+    dsa = min(100, solved // 4 + ctx["hard_solved"] * 2)
+    frontend = coverage(FRONTEND_HINTS)
+    backend = coverage(BACKEND_HINTS)
+    database = coverage(DB_HINTS, 35)
+    ai_ml = coverage(AI_HINTS, 35)
+    consistency = min(100, ctx["total_commits"] // 5)
+    productivity = min(100, len(ctx["repos"]) * 5 + ctx["total_prs"] * 2)
+    full_stack = round((frontend + backend) / 2) if frontend and backend else 0
+    interview = round(dsa * 0.7 + max(frontend, backend) * 0.3)
+    overall = round((dsa + frontend + backend + consistency + productivity) / 5)
+
+    strengths, weaknesses, recommendations = [], [], []
+    if solved >= 100:
+        strengths.append(f"Solid problem-solving practice with {solved} DSA problems solved")
+    if backend >= 50:
+        strengths.append("Hands-on backend development experience across repositories")
+    if frontend >= 50:
+        strengths.append("Experience building frontend interfaces")
+    if len(ctx["repos"]) >= 5:
+        strengths.append(f"Maintains {len(ctx['repos'])} public repositories")
+    if solved < 50:
+        weaknesses.append("Limited DSA practice on LeetCode/GeeksforGeeks")
+        recommendations.append("Solve 2-3 DSA problems daily on LeetCode or GeeksforGeeks")
+    if consistency < 40:
+        weaknesses.append("Commit activity is infrequent")
+        recommendations.append("Commit small, regular changes to build a consistent contribution history")
+    if database < 35:
+        weaknesses.append("Little evidence of database work")
+        recommendations.append("Build a project that uses a relational or document database end-to-end")
+
+    return {
+        "scores": {
+            "dsa": dsa, "frontend": frontend, "backend": backend, "fullStack": full_stack,
+            "devops": 0, "aiMl": ai_ml, "database": database, "security": 0, "cloud": 0,
+            "consistency": consistency, "productivity": productivity,
+            "interviewReadiness": interview, "overallScore": overall,
+        },
+        "strengths": strengths or ["Getting started — connect more platforms for richer insights"],
+        "weaknesses": weaknesses,
+        "recommendations": recommendations,
+        "roadmap": [
+            "Strengthen DSA fundamentals with a daily practice routine",
+            "Ship one full-stack project with authentication, a database and deployment",
+            "Write READMEs and descriptions for your top repositories",
+        ],
+    }

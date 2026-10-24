@@ -18,6 +18,7 @@ class PersonalInfo(BaseModel):
 
 class EducationItem(BaseModel):
     institution: str = ""
+    location: str = ""
     degree: str = ""
     fieldOfStudy: str = ""
     startYear: str = ""

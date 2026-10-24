@@ -2,7 +2,7 @@ import os
 import json
 import re
 from typing import Optional, List, Dict, Any
-import httpx
+from services.analytics_engine import ask_groq_json
 
 ACTION_VERBS = [
     "architected", "engineered", "developed", "implemented", "designed",
@@ -74,7 +74,7 @@ async def infer_resume_data(user, github_stats, integration_profile, intelligenc
 
     technical: List[str] = []
     frameworks: List[str] = []
-    tools: List[str] = ["Git", "VS Code", "GitHub", "Postman"]
+    tools: List[str] = ["Git", "GitHub"] if github_stats and github_stats.repositories else []
     soft: List[str] = ["System Architecture", "Problem Solving", "Code Review", "Agile Collaboration"]
 
     LANG_LIST = ["TypeScript", "JavaScript", "Python", "Java", "C++", "Go", "HTML", "CSS", "SQL"]
@@ -99,18 +99,13 @@ async def infer_resume_data(user, github_stats, integration_profile, intelligenc
             if lang not in technical:
                 technical.append(lang)
 
-    if not technical:
-        technical = ["JavaScript", "TypeScript", "Node.js"]
-    if not frameworks:
-        frameworks = ["React", "Express"]
 
     # Select best 3 projects with Groq
     projects = []
     selected_repos = []
 
     if github_stats and github_stats.repositories:
-        groq_key = os.getenv("GROQ_API_KEY")
-        if groq_key:
+        if os.getenv("GROQ_API_KEY"):
             try:
                 repo_data = [
                     {"name": r.name, "description": r.description, "primary_language": r.language,
@@ -124,14 +119,7 @@ Prioritize: full-stack, backend, AI, complex architecture, TypeScript/Python pro
 Avoid simple HTML/CSS projects.
 Output ONLY a valid JSON: {{"projects": ["exact_name_1", "exact_name_2", "exact_name_3"]}}"""
 
-                async with httpx.AsyncClient(timeout=15.0) as client:
-                    resp = await client.post(
-                        "https://api.groq.com/openai/v1/chat/completions",
-                        json={"model": "llama-3.1-8b-instant", "messages": [{"role": "user", "content": prompt}],
-                              "temperature": 0.1, "response_format": {"type": "json_object"}},
-                        headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
-                    )
-                data = json.loads(resp.json()["choices"][0]["message"]["content"])
+                data = await ask_groq_json(prompt)
                 selected_names = data.get("projects", [])
                 if selected_names:
                     name_set = set(selected_names)
@@ -176,54 +164,68 @@ Output ONLY a valid JSON: {{"projects": ["exact_name_1", "exact_name_2", "exact_
                 "techStack": [*technical[:3], *frameworks[:3]],
             })
 
-    dev_score = (intelligence.scores.overallScore if intelligence else None) or 85
-    top_strengths = (", ".join(intelligence.strengths[:3]) if intelligence else None) or "full stack engineering and scalable system design"
-    career_objective = f"Innovative and results-driven {target_role} with a Developer Score of {dev_score}/100 and demonstrated expertise in {top_strengths}. Proven record of engineering high-performance software architectures and delivering robust web applications."
+    # Built only from verifiable facts; empty clauses are dropped rather than padded with claims
+    repo_count = len(github_stats.repositories) if github_stats else 0
+    dsa_solved = 0
+    if integration_profile:
+        if integration_profile.leetcodeUsername:
+            dsa_solved += integration_profile.leetcodeStats.solvedTotal
+        if integration_profile.gfgUsername:
+            dsa_solved += integration_profile.gfgStats.solvedTotal
+    skills_clause = ", ".join([*technical[:3], *frameworks[:2]])
+    clauses = []
+    if repo_count:
+        clauses.append(f"built {repo_count} public project{'s' if repo_count != 1 else ''} on GitHub")
+    if dsa_solved:
+        clauses.append(f"solved {dsa_solved}+ data structures & algorithms problems on LeetCode and GeeksforGeeks")
+    career_objective = f"Results-driven {target_role}" + (f" skilled in {skills_clause}" if skills_clause else "") + "."
+    if clauses:
+        career_objective += " Has " + " and ".join(clauses) + "."
+    career_objective += " Focused on building reliable, well-engineered software."
 
     github_username = github_stats.profile.username if github_stats else ""
 
+    coding_links: List[Dict[str, str]] = []
+    achievements: List[str] = []
+    if integration_profile and integration_profile.leetcodeUsername:
+        lc = integration_profile.leetcodeStats
+        coding_links.append({"label": "LeetCode", "url": f"https://leetcode.com/u/{integration_profile.leetcodeUsername}/"})
+        if lc.solvedTotal:
+            achievements.append(f"Solved {lc.solvedTotal}+ problems on LeetCode ({lc.solvedMedium} Medium, {lc.solvedHard} Hard)"
+                                + (f" with a contest rating of {lc.contestRating}." if lc.contestRating else "."))
+    if integration_profile and integration_profile.gfgUsername:
+        gfg = integration_profile.gfgStats
+        coding_links.append({"label": "GeeksforGeeks", "url": f"https://www.geeksforgeeks.org/user/{integration_profile.gfgUsername}/"})
+        if gfg.solvedTotal:
+            achievements.append(f"Solved {gfg.solvedTotal}+ problems on GeeksforGeeks with a coding score of {gfg.codingScore}"
+                                + (f" (Institute Rank {gfg.instituteRank})." if gfg.instituteRank else "."))
+
     return {
+        # Only fields that can be derived from connected data. Contact details, education,
+        # certifications and hackathons are left empty for the user to fill in — never invented.
         "personalInfo": {
             "fullName": full_name, "jobTitle": target_role, "email": email,
-            "phone": "+1 (555) 123-4567", "location": "San Francisco, CA / Remote",
-            "githubUrl": f"https://github.com/{github_username}",
-            "linkedinUrl": "https://linkedin.com/in/developer",
-            "websiteUrl": "https://developer.os", "customLinks": [],
+            "phone": "", "location": "",
+            "githubUrl": f"https://github.com/{github_username}" if github_username else "",
+            "linkedinUrl": "", "websiteUrl": "", "customLinks": coding_links,
         },
         "careerObjective": career_objective,
         "targetRole": target_role,
         "selectedTemplate": target_role,
-        "education": [{
-            "institution": "University of Technology / Computer Science Institute",
-            "degree": "Bachelor of Science",
-            "fieldOfStudy": "Computer Science & Engineering",
-            "startYear": "2020", "endYear": "2024", "gpa": "3.8/4.0",
-            "highlights": [
-                "Relevant Coursework: Data Structures & Algorithms, Operating Systems, Database Systems, Computer Networks.",
-                "Lead Developer for University Open Source Society."
-            ],
-        }],
+        "education": [],
         "experience": experience,
         "projects": projects,
         "skills": {"technical": technical, "frameworks": frameworks, "tools": tools, "soft": soft},
-        "categorizedSkills": [
-            {"category": "Programming Languages", "skills": technical or ["C++", "Python", "Java", "JavaScript"]},
-            {"category": "Frontend", "skills": [f for f in frameworks if any(x in f.lower() for x in ["react", "next", "vue", "tailwind", "html", "css"])] or ["React", "HTML5", "CSS3", "Tailwind CSS"]},
-            {"category": "Backend & APIs", "skills": [f for f in frameworks if any(x in f.lower() for x in ["node", "express", "fastapi", "rest", "jwt"])] or ["Node.js", "Express.js", "FastAPI", "RESTful APIs", "JWT Authentication"]},
-            {"category": "Databases", "skills": ["MongoDB", "MySQL"]},
-            {"category": "AI / ML", "skills": ["Scikit-learn", "PyTorch", "NumPy", "Pandas", "Transformer Models", "Hugging Face Trainer"]},
-            {"category": "Core Computer Science", "skills": ["Data Structures & Algorithms", "Object-Oriented Programming (OOP)", "Database Management Systems (DBMS)", "Operating Systems", "Computer Networks"]},
-            {"category": "Tools and Platforms", "skills": tools or ["Git", "GitHub", "VS Code", "Docker", "Vercel", "Render"]},
-        ],
-        "hackathons": [
-            {"name": "Odoo Hackathon", "achievement": "Secured Top 10 position in Internal Round", "date": "2025"},
-            {"name": "Smart India Hackathon (SIH)", "achievement": "Participant / Finalist", "date": "2025"},
-        ],
-        "certifications": [
-            {"name": "MongoDB Associate Developer", "issuer": "MongoDB"},
-            {"name": "SQL (Intermediate)", "issuer": "HackerRank"},
-            {"name": "Oracle Certified Professional: Java SE 17 Developer", "issuer": "Oracle"},
-        ],
+        "categorizedSkills": [c for c in [
+            {"category": "Programming Languages", "skills": technical},
+            {"category": "Frontend", "skills": [f for f in frameworks if any(x in f.lower() for x in ["react", "next", "vue", "tailwind", "html", "css"])]},
+            {"category": "Backend & APIs", "skills": [f for f in frameworks if any(x in f.lower() for x in ["node", "express", "fastapi", "django", "flask", "spring", "rest", "jwt"])]},
+            {"category": "Core Computer Science", "skills": ["Data Structures & Algorithms"] if coding_links else []},
+            {"category": "Tools and Platforms", "skills": tools},
+        ] if c["skills"]],
+        "hackathons": [],
+        "certifications": [],
+        "achievements": achievements,
         "customSections": [],
     }
 

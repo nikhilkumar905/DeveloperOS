@@ -81,7 +81,6 @@ const ACTIVITY_LABELS: Record<string, string> = {
 };
 
 const PLATFORMS = ['all', 'github', 'leetcode', 'hackerrank', 'codeforces', 'geeksforgeeks', 'stackoverflow', 'docs'];
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const formatDuration = (ms: number): string => {
   const hours = Math.floor(ms / 3600000);
@@ -357,7 +356,7 @@ const ActivityFeed: React.FC = () => {
               className={`heatmap-cell level-${day.level} ${selectedDate === day.date ? 'selected-cell' : ''}`}
               title={`${day.date}: ${day.ms > 0 ? formatDuration(day.ms) : 'No activity'}`}
               onClick={() => setSelectedDate(day.date)}
-              style={{ cursor: 'pointer', border: selectedDate === day.date ? '2px solid #fff' : 'none' }}
+              style={{ cursor: 'pointer', border: selectedDate === day.date ? '2px solid var(--text-main)' : 'none' }}
             />
           ))}
         </div>
@@ -437,12 +436,12 @@ const ActivityFeed: React.FC = () => {
               >
                 <defs>
                   <linearGradient id="hillGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6366f1" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity="0.0" />
+                    <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.0" />
                   </linearGradient>
                   <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#8b5cf6" />
-                    <stop offset="100%" stopColor="#6366f1" />
+                    <stop offset="0%" stopColor="var(--primary)" />
+                    <stop offset="100%" stopColor="var(--primary)" />
                   </linearGradient>
                 </defs>
                 
@@ -456,8 +455,8 @@ const ActivityFeed: React.FC = () => {
                     cx={p.x} 
                     cy={p.y} 
                     r="5" 
-                    fill="#151821" 
-                    stroke={p.m.totalTimeMs > 0 ? "#8b5cf6" : "rgba(255,255,255,0.2)"} 
+                    fill="var(--bg-surface)" 
+                    stroke={p.m.totalTimeMs > 0 ? "var(--primary)" : "var(--border-strong)"} 
                     strokeWidth="2.5" 
                   />
                 ))}
@@ -476,7 +475,7 @@ const ActivityFeed: React.FC = () => {
                     title={`${m.label} ${m.year}: ${isEmpty ? 'No activity' : `${formatDuration(m.totalTimeMs)} · ${m.problemsSolved} solved · ${m.activeDays} days`}`}
                   >
                     {/* Invisible overlay track for hover/click area */}
-                    <div className="yearly-bar-track" style={{ background: isActive ? 'rgba(255,255,255,0.06)' : 'transparent', borderRadius: 4 }}>
+                    <div className="yearly-bar-track" style={{ background: isActive ? 'rgb(var(--tint-rgb) / 0.06)' : 'transparent', borderRadius: 4 }}>
                       {isActive && <div style={{ position: 'absolute', bottom: 0, width: '100%', height: '3px', background: '#10b981', boxShadow: '0 -2px 8px rgba(16,185,129,0.5)' }} />}
                     </div>
                     
