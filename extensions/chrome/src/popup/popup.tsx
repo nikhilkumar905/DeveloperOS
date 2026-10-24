@@ -96,11 +96,12 @@ const DEFAULT_SETTINGS: ExtensionSettings = {
 
 // ─── Main Popup Component ─────────────────────────────────────────────────────
 
-// The local API runs on :6500 with its dashboard on :6501; a deployed app serves both from one origin
+// Map the API address to the dashboard: :6500 -> :6501 locally, api.<domain> -> <domain> when deployed
 const dashboardUrl = (server: string): string => {
   try {
     const u = new URL(server);
     if (u.port === '6500') u.port = '6501';
+    if (u.hostname.startsWith('api.')) u.hostname = u.hostname.slice(4);
     return `${u.origin}/dashboard`;
   } catch {
     return 'http://localhost:6501/dashboard';
@@ -177,7 +178,7 @@ const Popup: React.FC = () => {
     try {
       serverUrl = new URL(serverInput.trim());
     } catch {
-      setMessage({ text: 'Enter a valid server URL, e.g. https://your-app.vercel.app', type: 'error' });
+      setMessage({ text: 'Enter a valid server URL, e.g. https://api.developeros.page', type: 'error' });
       return;
     }
     const isLocal = ['localhost', '127.0.0.1'].includes(serverUrl.hostname);
@@ -268,7 +269,7 @@ const Popup: React.FC = () => {
           <input
             type="url"
             className="token-input"
-            placeholder="Server URL, e.g. https://your-app.vercel.app"
+            placeholder="Server URL, e.g. https://api.developeros.page"
             value={serverInput}
             onChange={(e) => setServerInput(e.target.value)}
             aria-label="PersonalOS server URL"

@@ -5,7 +5,7 @@
 **One workspace for a developer's whole footprint: GitHub, LeetCode, GeeksforGeeks, resume, portfolio, activity, and an AI assistant that knows all of it.**
 
 [![GitHub](https://img.shields.io/badge/GitHub-nikhilkumar905%2FDeveloperOS-181717?logo=github)](https://github.com/nikhilkumar905/DeveloperOS)
-[![Live demo](https://img.shields.io/badge/Live%20demo-coming%20soon-2563eb)](#-links)
+[![Live demo](https://img.shields.io/badge/Live%20demo-developeros.page-2563eb)](https://developeros.page)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
@@ -21,7 +21,7 @@
 | | |
 |---|---|
 | **Source code** | https://github.com/nikhilkumar905/DeveloperOS |
-| **Live demo** | _Coming soon. Replace this line with the deployed URL._ |
+| **Live demo** | https://developeros.page |
 
 > The app is branded **PersonalOS** in its interface; the project and repository are called **DeveloperOS**.
 
@@ -545,7 +545,7 @@ CI (`.github/workflows/ci.yml`) runs the backend import check, chat-service synt
 
 ## 🚀 Deploying to production
 
-**Step-by-step guide for Vercel (frontend) + Render (API and chat service): [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).** The repository already includes `render.yaml` (a Render Blueprint for both backend services) and `frontend/vercel.json` (build settings plus a proxy so the login cookie works across Vercel and Render).
+**Step-by-step guide for deploying on `developeros.page` with Vercel (frontend) + Render (API and chat service): [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).** The repository already includes `render.yaml` (a Render Blueprint for both backend services) and `frontend/vercel.json` (build settings and page routing).
 
 General checklist for any host:
 
