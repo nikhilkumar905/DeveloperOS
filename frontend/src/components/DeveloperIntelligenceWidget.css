@@ -1,12 +1,12 @@
 .intelligence-widget {
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgb(var(--surface-rgb) / 0.5);
+  border: 1px solid rgb(var(--tint-rgb) / 0.1);
   border-radius: 12px;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  color: white;
+  color: var(--text-main);
   margin-bottom: 2rem;
 }
 
@@ -26,8 +26,8 @@
 
 .refresh-btn {
   background: transparent;
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white;
+  border: 1px solid var(--border-strong);
+  color: var(--text-soft);
   padding: 0.5rem;
   border-radius: 8px;
   cursor: pointer;
@@ -37,7 +37,7 @@
   transition: all 0.2s ease;
 }
 .refresh-btn:hover {
-  background: rgba(255,255,255,0.1);
+  background: rgb(var(--tint-rgb) / 0.1);
 }
 .refresh-btn:disabled {
   opacity: 0.5;
@@ -57,7 +57,7 @@
 }
 
 .score-card {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgb(var(--shade-rgb) / calc(0.2 * var(--shade-strength)));
   border-radius: 8px;
   padding: 1rem;
 }
@@ -65,7 +65,7 @@
 .score-card h3 {
   margin: 0 0 1rem 0;
   font-size: 1rem;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .score-row {
@@ -78,13 +78,13 @@
 .score-label {
   width: 120px;
   font-size: 0.9rem;
-  color: #cbd5e1;
+  color: var(--text-soft);
 }
 
 .score-bar-bg {
   flex: 1;
   height: 8px;
-  background: rgba(255,255,255,0.1);
+  background: rgb(var(--tint-rgb) / 0.1);
   border-radius: 4px;
   overflow: hidden;
   position: relative;
@@ -128,7 +128,7 @@
 
 .overall-score-label {
   font-size: 1.1rem;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .insights-section {
@@ -156,7 +156,7 @@
   margin: 0;
 }
 .insight-list li {
-  background: rgba(255,255,255,0.05);
+  background: rgb(var(--tint-rgb) / 0.05);
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
   margin-bottom: 0.5rem;
@@ -167,7 +167,7 @@
 }
 
 .roadmap-section {
-  background: rgba(0,0,0,0.2);
+  background: rgb(var(--shade-rgb) / calc(0.2 * var(--shade-strength)));
   padding: 1.5rem;
   border-radius: 8px;
 }
@@ -196,7 +196,7 @@
   flex-shrink: 0;
 }
 .roadmap-item-content {
-  background: rgba(255,255,255,0.05);
+  background: rgb(var(--tint-rgb) / 0.05);
   padding: 0.75rem 1rem;
   border-radius: 8px;
   flex: 1;

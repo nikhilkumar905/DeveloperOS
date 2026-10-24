@@ -1,20 +1,102 @@
+/*
+ * DeveloperOS design tokens.
+ * Two themes share one set of variable names; components only ever use the variables.
+ * The theme is chosen by <html data-theme="dark|light"> (see index.html + lib/theme.ts).
+ *
+ * *-rgb tokens are space-separated channels for translucent use:
+ *   rgb(var(--tint-rgb) / 0.06)   subtle overlay that is light-on-dark or dark-on-light
+ *   rgb(var(--primary-rgb) / 0.12) tinted accent background
+ */
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg-color: #0b1220;
+  --bg-surface: #111a2b;
+  --bg-surface-hover: #16213a;
+  --bg-elevated: #172235;
+  --bg-input: #0d1626;
+
+  --text-main: #e6edf6;
+  --text-soft: #c3cedd;
+  --text-muted: #8b98ab;
+
+  --border-color: #22304a;
+  --border-strong: #31415f;
+
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --primary-rgb: 59 130 246;
+  --on-primary: #ffffff;
+
+  --tint-rgb: 255 255 255;
+  --surface-rgb: 17 26 43;
+  --shade-rgb: 0 0 0;
+  --shade-strength: 1;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 12px 28px rgb(0 0 0 / 0.45);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg-color: #f4f6f9;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #f1f4f8;
+  --bg-elevated: #f8fafc;
+  --bg-input: #ffffff;
+
+  --text-main: #0f172a;
+  --text-soft: #334155;
+  --text-muted: #5b6b80;
+
+  --border-color: #dde3ea;
+  --border-strong: #c5cfdb;
+
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-rgb: 37 99 235;
+  --on-primary: #ffffff;
+
+  --tint-rgb: 15 23 42;
+  --surface-rgb: 255 255 255;
+  --shade-rgb: 15 23 42;
+  --shade-strength: 0.22;
+
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-md: 0 2px 8px rgb(15 23 42 / 0.08);
+  --shadow-lg: 0 8px 24px rgb(15 23 42 / 0.1);
+}
+
 :root {
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
   --secondary: #10b981;
-  --bg-color: #0f172a;
-  --bg-surface: #1e293b;
-  --bg-surface-hover: #334155;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --border-color: #334155;
-  --danger: #ef4444;
-  --font-family: 'Inter', system-ui, sans-serif;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
+  --danger: #dc2626;
+  --warning: #d97706;
+
+  --font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+
+  /* The flat theme uses a solid accent where the old design used gradients/glows */
+  --primary-gradient: var(--primary);
+  --glow-primary: none;
+
+  /* Aliases for names used across older components */
+  --bg-card: var(--bg-surface);
+  --card-bg: var(--bg-surface);
+  --surface-color: var(--bg-surface);
+  --bg-hover: var(--bg-surface-hover);
+  --surface-hover: var(--bg-surface-hover);
+  --border: var(--border-color);
+  --border-light: var(--border-color);
+  --text-primary: var(--text-main);
+  --text-color: var(--text-main);
+  --text-secondary: var(--text-muted);
+  --primary-color: var(--primary);
+  --shadow: var(--shadow-md);
 }
 
 * {
@@ -29,6 +111,8 @@ body {
   color: var(--text-main);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'cv11', 'ss01';
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 a {
@@ -41,10 +125,19 @@ button {
   font-family: inherit;
   border: none;
   background: none;
+  color: inherit;
 }
 
-input {
+input,
+textarea,
+select {
   font-family: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 /* Utilities */
@@ -52,52 +145,70 @@ input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1.5rem;
+  padding: 0.6rem 1.15rem;
   border-radius: var(--radius-md);
   font-weight: 600;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-primary {
-  background-color: var(--primary);
-  color: white;
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
 }
 
-.btn-primary:hover {
-  background-color: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
 }
 
 .btn-secondary {
-  background-color: var(--bg-surface-hover);
+  background-color: var(--bg-surface);
   color: var(--text-main);
+  border-color: var(--border-strong);
 }
 
-.btn-secondary:hover {
-  background-color: var(--border-color);
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--bg-surface-hover);
 }
 
 .btn-danger {
+  background-color: rgb(220 38 38 / 0.1);
+  color: var(--danger);
+  border-color: rgb(220 38 38 / 0.25);
+}
+
+.btn-danger:hover:not(:disabled) {
   background-color: var(--danger);
-  color: white;
+  color: #ffffff;
 }
 
 .input-field {
   width: 100%;
-  padding: 0.75rem 1rem;
-  background-color: var(--bg-color);
-  border: 1px solid var(--border-color);
+  padding: 0.65rem 0.9rem;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
   color: var(--text-main);
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  font-size: 0.9rem;
+}
+
+.input-field::placeholder {
+  color: var(--text-muted);
 }
 
 .input-field:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 3px rgb(var(--primary-rgb) / 0.18);
 }
 
 .form-group {
@@ -106,44 +217,54 @@ input {
 
 .form-label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-soft);
 }
 
 .card {
-  background-color: var(--bg-surface);
+  background: var(--bg-surface);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
-  padding: 2rem;
-  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease;
+}
+
+.card:hover {
+  border-color: var(--border-strong);
 }
 
 .glass-panel {
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
 }
 
+/* Kept for existing markup; the official theme uses plain accent text instead of gradients */
 .text-gradient {
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-image: linear-gradient(to right, #6366f1, #a855f7, #ec4899);
+  color: var(--text-main);
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.3s ease-out forwards;
 }
 
 .delay-100 { animation-delay: 100ms; }
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

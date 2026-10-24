@@ -1,46 +1,99 @@
-version: '3.8'
+# DeveloperOS — run the whole stack with one command:  docker compose up --build
+#
+# Secrets and settings come from the root .env file (copy .env.example and fill it in).
+# Nothing secret is hard-coded here; JWT_SECRET is required and has no default.
 
 services:
   mongo:
     image: mongo:7.0
-    container_name: developer-os-mongo
-    restart: always
+    container_name: developeros-mongo
+    restart: unless-stopped
+    # Only reachable from this machine; the other containers use the internal network name "mongo"
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/27017' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
 
   backend:
     build:
-      context: ./backend
+      context: ./fastapi-backend
       dockerfile: Dockerfile
-    container_name: developer-os-backend
-    restart: always
+    container_name: developeros-backend
+    restart: unless-stopped
     ports:
       - "6500:6500"
     environment:
-      - PORT=6500
-      - NODE_ENV=production
-      - MONGO_URI=mongodb://mongo:27017/developer-os
-      - JWT_SECRET=${JWT_SECRET:-super_secret_jwt_key_docker_1234567890}
-      - FRONTEND_URL=http://localhost:6501
-      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
-      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      PORT: "6500"
+      # Set DOCKER_MONGO_URI in .env to use MongoDB Atlas instead of the bundled container
+      MONGO_URI: ${DOCKER_MONGO_URI:-mongodb://mongo:27017}
+      MONGO_DB_NAME: ${MONGO_DB_NAME:-personalos}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (at least 32 random characters)}
+      APP_ENV: ${APP_ENV:-development}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:6501}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GITHUB_CALLBACK_URL: ${GITHUB_CALLBACK_URL:-http://localhost:6500/api/github/callback}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:6500/api/auth/google/callback}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
+
+  chat:
+    build:
+      context: ./chat-service
+      dockerfile: Dockerfile
+    container_name: developeros-chat
+    restart: unless-stopped
+    ports:
+      - "6502:6502"
+    environment:
+      CHAT_PORT: "6502"
+      MONGO_URI: ${DOCKER_MONGO_URI:-mongodb://mongo:27017}
+      MONGO_DB_NAME: ${MONGO_DB_NAME:-personalos}
+      # Must be the same secret as the backend: the chat service verifies the same access tokens
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (at least 32 random characters)}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:6501}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-20b}
+      CHAT_PER_MINUTE: ${CHAT_PER_MINUTE:-10}
+      CHAT_PER_DAY: ${CHAT_PER_DAY:-200}
+    volumes:
+      - chroma_data:/data/chroma
+    depends_on:
+      mongo:
+        condition: service_healthy
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      # These are compiled into the JavaScript bundle, so they must be the URLs your browser can reach
       args:
-        - VITE_API_URL=http://localhost:6500
-    container_name: developer-os-frontend
-    restart: always
+        VITE_API_URL: ${PUBLIC_API_URL:-http://localhost:6500}
+        VITE_CHAT_API_URL: ${PUBLIC_CHAT_API_URL:-http://localhost:6502}
+    container_name: developeros-frontend
+    restart: unless-stopped
     ports:
       - "6501:80"
     depends_on:
       - backend
+      - chat
 
 volumes:
   mongo_data:
+  chroma_data:

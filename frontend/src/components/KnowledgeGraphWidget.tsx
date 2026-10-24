@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { Network, Maximize2, Minimize2, AlertCircle } from 'lucide-react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { API_BASE_URL } from '../lib/api';
@@ -24,6 +25,7 @@ interface GraphEdge {
 
 const KnowledgeGraphWidget: React.FC = () => {
   const { token } = React.useContext(AuthContext);
+  const { theme } = useTheme();
   const [nodes, setNodes] = useState<GraphNode[]>([]);
   const [edges, setEdges] = useState<GraphEdge[]>([]);
   const [loading, setLoading] = useState(false);
@@ -91,6 +93,8 @@ const KnowledgeGraphWidget: React.FC = () => {
 
   useEffect(() => {
     fetchGraph();
+    window.addEventListener('personalos-integration-updated', fetchGraph);
+    return () => window.removeEventListener('personalos-integration-updated', fetchGraph);
   }, [fetchGraph]);
 
   // After data loads, center the graph
@@ -150,7 +154,7 @@ const KnowledgeGraphWidget: React.FC = () => {
             nodeLabel="label"
             nodeColor="color"
             nodeVal="val"
-            linkColor={() => 'rgba(255,255,255,0.2)'}
+            linkColor={() => (theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(15, 23, 42, 0.18)')}
             linkWidth={1}
             linkDirectionalArrowLength={3.5}
             linkDirectionalArrowRelPos={1}

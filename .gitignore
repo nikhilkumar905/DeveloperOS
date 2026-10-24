@@ -55,3 +55,12 @@ coverage/
 # ------- Miscellaneous -------
 *.local
 *.tsbuildinfo
+
+chat-service/venv/
+chat-service/__pycache__/
+# Vector index holds embedded personal profile data; it is rebuilt on demand
+chat-service/chroma_db/
+fastapi-backend/venv/
+.venv/
+__pycache__/
+*.pyc

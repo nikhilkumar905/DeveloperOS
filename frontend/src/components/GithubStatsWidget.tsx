@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { Github, Star, GitFork, GitPullRequest, AlertCircle, RefreshCw, XCircle } from 'lucide-react';
-import { API_BASE_URL } from '../lib/api';
+import { API_BASE_URL, getErrorMessage, parseUtc } from '../lib/api';
 import './GithubStatsWidget.css';
 
 interface GithubStats {
@@ -35,40 +35,68 @@ const GithubStatsWidget: React.FC = () => {
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  // True between the OAuth redirect and the first background sync finishing
+  const [awaitingFirstSync, setAwaitingFirstSync] = useState(false);
+  // Read the OAuth callback params once: StrictMode runs effects twice, and the first run clears the URL
+  const [callbackParams] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('github_connected') || params.has('github_error')) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    return { connected: params.get('github_connected') === 'true', failed: params.has('github_error') };
+  });
 
-  const fetchStats = useCallback(async () => {
-    if (!token) return;
+  const fetchStats = useCallback(async (): Promise<boolean> => {
+    if (!token) return false;
     try {
       const response = await axios.get(`${API_BASE_URL}/api/github/stats`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      setStats(response.data);
-      setIsConnected(true);
+      // The API answers 200 with `null` when GitHub isn't connected
+      const connected = !!response.data;
+      setStats(response.data || null);
+      setIsConnected(connected);
+      setError(null);
+      return connected;
     } catch (err: any) {
-      if (err.response && err.response.status === 404) {
-        setIsConnected(false);
-      } else {
-        setError('Failed to fetch GitHub stats.');
-      }
+      setError(getErrorMessage(err, 'Failed to fetch GitHub stats.'));
+      return false;
     } finally {
       setLoading(false);
     }
   }, [token]);
 
   useEffect(() => {
-    if (token) {
-      fetchStats();
-      
-      // Check for callback params
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('github_connected') === 'true') {
-        window.history.replaceState({}, document.title, window.location.pathname);
-        fetchStats();
-      }
+    if (!token) return;
+    if (callbackParams.failed) {
+      // Set after the fetch, which clears errors on success
+      fetchStats().then(() => setError('GitHub connection failed. Please try again.'));
+      return;
     }
-  }, [token, fetchStats]);
+    if (!callbackParams.connected) {
+      fetchStats();
+      return;
+    }
+
+    // Just came back from GitHub OAuth: the first sync runs in the background, so poll until it lands
+    setAwaitingFirstSync(true);
+    let attempts = 0;
+    let cancelled = false;
+    const poll = async () => {
+      const connected = await fetchStats();
+      if (cancelled) return;
+      if (connected || ++attempts >= 30) {
+        setAwaitingFirstSync(false);
+        if (connected) window.dispatchEvent(new Event('personalos-integration-updated'));
+        return;
+      }
+      setTimeout(poll, 3000);
+    };
+    poll();
+    return () => { cancelled = true; };
+  }, [token, fetchStats, callbackParams]);
 
   const handleConnect = async () => {
     if (!token) return;
@@ -79,7 +107,7 @@ const GithubStatsWidget: React.FC = () => {
       window.location.href = res.data.url;
     } catch (err) {
       console.error(err);
-      setError('Failed to initiate GitHub connection.');
+      setError(getErrorMessage(err, 'Failed to initiate GitHub connection.'));
     }
   };
 
@@ -91,9 +119,10 @@ const GithubStatsWidget: React.FC = () => {
       });
       setIsConnected(false);
       setStats(null);
+      window.dispatchEvent(new Event('personalos-integration-updated'));
     } catch (err) {
       console.error(err);
-      setError('Failed to disconnect.');
+      setError(getErrorMessage(err, 'Failed to disconnect.'));
     }
   };
 
@@ -105,16 +134,22 @@ const GithubStatsWidget: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(res.data);
+      setError(null);
+      window.dispatchEvent(new Event('personalos-integration-updated'));
     } catch (err) {
       console.error(err);
-      setError('Failed to sync data.');
+      setError(getErrorMessage(err, 'Failed to sync data.'));
     } finally {
       setSyncing(false);
     }
   };
 
-  if (loading) {
-    return <div className="card widget-box github-widget loading"><RefreshCw className="spinner" /> Loading GitHub Stats...</div>;
+  if (loading || awaitingFirstSync) {
+    return (
+      <div className="card widget-box github-widget loading">
+        <RefreshCw className="spinner" /> {awaitingFirstSync ? 'GitHub connected — importing your repositories...' : 'Loading GitHub Stats...'}
+      </div>
+    );
   }
 
   if (!isConnected) {
@@ -202,7 +237,7 @@ const GithubStatsWidget: React.FC = () => {
           </div>
           
           <div className="github-footer">
-            Last synced: {new Date(stats.lastSyncedAt).toLocaleString()}
+            Last synced: {stats.lastSyncedAt ? parseUtc(stats.lastSyncedAt).toLocaleString() : 'never'}
           </div>
         </div>
       )}

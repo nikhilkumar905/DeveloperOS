@@ -1,11 +1,23 @@
-import React, { useContext } from 'react';
+import React, { useContext, useRef } from 'react';
 import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Terminal, LayoutDashboard, UserCircle, LogOut, FileText, Globe, Zap } from 'lucide-react';
+import { useAutoSync } from '../hooks/useAutoSync';
+import { ChatWidget } from '../components/ChatWidget';
+import ThemeToggle from '../components/ThemeToggle';
 
 const DashboardLayout: React.FC = () => {
-  const { user, logout, isLoading } = useContext(AuthContext);
+  const { user, token, logout, isLoading } = useContext(AuthContext);
+  // A deliberate logout goes to the landing page; an expired/missing session still goes to /login
+  const loggingOut = useRef(false);
+  const handleLogout = () => {
+    loggingOut.current = true;
+    logout();
+  };
   const location = useLocation();
+
+  // Enable background auto-syncing every 3 minutes across all dashboard routes
+  useAutoSync(token, 3 * 60 * 1000);
 
   if (isLoading) {
     return (
@@ -16,7 +28,7 @@ const DashboardLayout: React.FC = () => {
     );
   }
 
-  if (!user) return <Navigate to="/login" />;
+  if (!user) return <Navigate to={loggingOut.current ? '/' : '/login'} replace />;
 
   const getPageTitle = (pathname: string): string => {
     if (pathname === '/dashboard') return 'Overview';
@@ -26,73 +38,103 @@ const DashboardLayout: React.FC = () => {
     return 'Dashboard';
   };
 
-  const navLinkStyle = (path: string, exact = false) => {
+  const navLinkStyle = (path: string, exact = false): React.CSSProperties => {
     const isActive = exact ? location.pathname === path : location.pathname.startsWith(path);
     return {
       display: 'flex',
       alignItems: 'center',
-      gap: '0.75rem',
-      padding: '0.75rem 1rem',
-      borderRadius: 'var(--radius-md)',
-      color: isActive ? 'white' : 'var(--text-main)',
-      backgroundColor: isActive ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
-      borderLeft: isActive ? '3px solid var(--primary)' : '3px solid transparent',
+      gap: '0.5rem',
+      height: '100%',
+      padding: '0 0.85rem',
+      color: isActive ? 'var(--text-main)' : 'var(--text-muted)',
+      borderBottom: isActive ? '2px solid var(--primary)' : '2px solid transparent',
       fontWeight: isActive ? 600 : 500,
-      transition: 'all 0.2s ease',
+      transition: 'color 0.15s ease, border-color 0.15s ease',
+      fontSize: '0.9rem'
     };
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-color)' }}>
-      {/* Sidebar */}
-      <aside style={{ width: '250px', backgroundColor: 'var(--bg-surface)', borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem', fontWeight: 700, borderBottom: '1px solid var(--border-color)' }}>
-          <Terminal style={{ color: 'var(--primary)' }} />
-          <span>PersonalOS</span>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--bg-color)' }}>
+      {/* Top Navbar */}
+      <header className="glass-panel" style={{
+        height: '60px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 2rem',
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        boxShadow: 'var(--shadow-sm)'
+      }}>
+        {/* Left: Logo + Nav Links */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem', height: '100%' }}>
+          <Link to="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.01em' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 'var(--radius-md)', background: 'var(--primary)', color: 'var(--on-primary)' }}>
+              <Terminal size={17} />
+            </span>
+            PersonalOS
+          </Link>
+
+          <nav style={{ display: 'flex', alignItems: 'stretch', height: '100%', gap: '0.25rem' }}>
+            <Link to="/dashboard" style={navLinkStyle('/dashboard', true)}>
+              <LayoutDashboard size={17} />
+              Overview
+            </Link>
+            <Link to="/dashboard/resume" style={navLinkStyle('/dashboard/resume')}>
+              <FileText size={17} />
+              Resume Studio
+            </Link>
+            <Link to="/dashboard/portfolio" style={navLinkStyle('/dashboard/portfolio')}>
+              <Globe size={17} />
+              Portfolio Studio
+            </Link>
+            <Link to="/dashboard/activity" style={navLinkStyle('/dashboard/activity')}>
+              <Zap size={17} />
+              Activity Tracker
+            </Link>
+          </nav>
         </div>
-        
-        <nav style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <Link to="/dashboard" style={navLinkStyle('/dashboard', true)}>
-            <LayoutDashboard size={20} />
-            Overview
-          </Link>
-          <Link to="/dashboard/resume" style={navLinkStyle('/dashboard/resume')}>
-            <FileText size={20} style={{ color: '#10b981' }} />
-            Resume Studio
-          </Link>
-          <Link to="/dashboard/portfolio" style={navLinkStyle('/dashboard/portfolio')}>
-            <Globe size={20} style={{ color: '#a855f7' }} />
-            Portfolio Studio
-          </Link>
-          <Link to="/dashboard/activity" style={navLinkStyle('/dashboard/activity')}>
-            <Zap size={20} style={{ color: '#f59e0b' }} />
-            Activity Tracker
-          </Link>
-        </nav>
-        
-        <div style={{ padding: '1rem', borderTop: '1px solid var(--border-color)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', color: 'var(--text-muted)' }}>
-            <UserCircle size={24} />
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</span>
+
+        {/* Right: Theme + User + Logout */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <ThemeToggle />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-soft)' }}>
+            <UserCircle size={19} />
+            <span style={{ fontWeight: 500, fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '150px' }}>
+              {user.name}
+            </span>
           </div>
-          <button onClick={logout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', color: 'var(--danger)', marginTop: '0.5rem', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 'var(--radius-md)' }}>
-            <LogOut size={20} />
+          <button
+            onClick={handleLogout}
+            className="btn btn-secondary"
+            style={{ padding: '0.4rem 0.8rem', gap: '0.4rem', fontSize: '0.85rem' }}
+          >
+            <LogOut size={15} />
             Logout
           </button>
         </div>
-      </aside>
+      </header>
 
-      {/* Main Content */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <header style={{ height: '64px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', display: 'flex', alignItems: 'center', padding: '0 2rem' }}>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 600 }}>{getPageTitle(location.pathname)}</h1>
-        </header>
-        <div style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
+      {/* Main Content (Full Width) */}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+        {/* Page Title */}
+        <div style={{ padding: '2rem 2rem 0', width: '100%', maxWidth: '1600px', margin: '0 auto' }}>
+           <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+             {getPageTitle(location.pathname)}
+           </h1>
+        </div>
+        
+        {/* Page Content Container */}
+        <div style={{ flex: 1, padding: '1.5rem 2rem 2rem', width: '100%', maxWidth: '1600px', margin: '0 auto' }}>
           <Outlet />
         </div>
       </main>
+      <ChatWidget />
     </div>
   );
 };
 
 export default DashboardLayout;
+

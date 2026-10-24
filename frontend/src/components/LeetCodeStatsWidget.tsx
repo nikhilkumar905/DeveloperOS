@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { Code2, Target, Trophy, AlertCircle, RefreshCw, XCircle, CheckCircle2 } from 'lucide-react';
-import { API_BASE_URL } from '../lib/api';
+import { API_BASE_URL, getErrorMessage, parseUtc } from '../lib/api';
 import './LeetCodeStatsWidget.css';
 
 interface LeetCodeStats {
@@ -74,9 +74,10 @@ const LeetCodeStatsWidget: React.FC = () => {
       setStatsData({ username: usernameInput.trim(), stats: res.data });
       setIsConnected(true);
       setError(null);
+      window.dispatchEvent(new Event('personalos-integration-updated'));
     } catch (err: any) {
       console.error(err);
-      setError(err.response?.data?.message || 'Failed to connect LeetCode account.');
+      setError(getErrorMessage(err, 'Failed to connect LeetCode account.'));
     } finally {
       setLoading(false);
     }
@@ -91,6 +92,7 @@ const LeetCodeStatsWidget: React.FC = () => {
       setIsConnected(false);
       setStatsData(null);
       setUsernameInput('');
+      window.dispatchEvent(new Event('personalos-integration-updated'));
     } catch (err) {
       console.error(err);
       setError('Failed to disconnect.');
@@ -109,7 +111,7 @@ const LeetCodeStatsWidget: React.FC = () => {
       }
     } catch (err) {
       console.error(err);
-      setError('Failed to sync data.');
+      setError(getErrorMessage(err, 'Failed to sync data.'));
     } finally {
       setSyncing(false);
     }
@@ -150,7 +152,7 @@ const LeetCodeStatsWidget: React.FC = () => {
   const { stats } = statsData!;
 
   return (
-    <div className="card widget-box leetcode-widget" style={{ marginTop: '1.25rem' }}>
+    <div className="card widget-box leetcode-widget">
       <div className="widget-header">
         <h3>LeetCode Stats <span className="text-muted" style={{ fontSize: '0.8rem', marginLeft: '0.5rem' }}>@{statsData!.username}</span></h3>
         <div className="leetcode-actions">
@@ -208,7 +210,7 @@ const LeetCodeStatsWidget: React.FC = () => {
               {stats.recentActivity.map((activity, idx) => (
                 <div key={idx} className="recent-item">
                   <span className="recent-title">{activity.title}</span>
-                  <span className="recent-date">{new Date(activity.date).toLocaleDateString()}</span>
+                  <span className="recent-date">{new Date(parseInt(activity.date)).toLocaleDateString()}</span>
                 </div>
               ))}
             </div>
@@ -216,7 +218,7 @@ const LeetCodeStatsWidget: React.FC = () => {
         )}
         
         <div className="leetcode-footer">
-          Last synced: {new Date(stats.lastSyncedAt).toLocaleString()}
+          Last synced: {stats.lastSyncedAt ? parseUtc(stats.lastSyncedAt).toLocaleString() : 'never'}
         </div>
       </div>
     </div>

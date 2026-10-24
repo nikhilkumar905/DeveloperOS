@@ -1,0 +1,1685 @@
+{
+  "label": "improved",
+  "model": "openai/gpt-oss-20b",
+  "embedding_model": "all-MiniLM-L6-v2",
+  "documents_indexed": 46,
+  "index_ms": 1043.5,
+  "config": {
+    "top_k": 4,
+    "fetch_k": 20,
+    "max_context_chars": 6000
+  },
+  "summary": {
+    "overall": {
+      "questions": 46,
+      "context_hit_rate": 1,
+      "retrieved_recall": 1.0,
+      "context_recall": 1.0,
+      "mrr": 0.943089430894309,
+      "context_precision": 0.25389082462253193,
+      "avg_context_chars": 1932.695652173913,
+      "retrieval_ms_p50": 16.1,
+      "answer_accuracy": 1,
+      "fact_recall": 1.0,
+      "false_refusal_rate": 0,
+      "abstention_accuracy": 1,
+      "hallucination_rate": 0,
+      "generation_ms_p50": 624.7,
+      "generation_ms_p95": 1462.3,
+      "rate_limited_questions": 0
+    },
+    "by_category": {
+      "activity": {
+        "questions": 2,
+        "context_hit_rate": 1,
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "mrr": 1.0,
+        "context_precision": 0.225,
+        "avg_context_chars": 1455,
+        "retrieval_ms_p50": 15.1,
+        "answer_accuracy": 1,
+        "fact_recall": 1.0,
+        "false_refusal_rate": 0,
+        "hallucination_rate": 0,
+        "generation_ms_p50": 618.5,
+        "generation_ms_p95": 1740.2,
+        "rate_limited_questions": 0
+      },
+      "aggregation": {
+        "questions": 7,
+        "context_hit_rate": 1,
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "mrr": 0.9047619047619048,
+        "context_precision": 0.4571428571428572,
+        "avg_context_chars": 2448.5714285714284,
+        "retrieval_ms_p50": 16.6,
+        "answer_accuracy": 1,
+        "fact_recall": 1.0,
+        "false_refusal_rate": 0,
+        "hallucination_rate": 0,
+        "generation_ms_p50": 624.7,
+        "generation_ms_p95": 795.5,
+        "rate_limited_questions": 0
+      },
+      "factual": {
+        "questions": 11,
+        "context_hit_rate": 1,
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "mrr": 0.9393939393939394,
+        "context_precision": 0.23333333333333334,
+        "avg_context_chars": 1700.909090909091,
+        "retrieval_ms_p50": 15.6,
+        "answer_accuracy": 1,
+        "fact_recall": 1.0,
+        "false_refusal_rate": 0,
+        "hallucination_rate": 0,
+        "generation_ms_p50": 554.5,
+        "generation_ms_p95": 2363.8,
+        "rate_limited_questions": 0
+      },
+      "follow-up": {
+        "questions": 3,
+        "context_hit_rate": 1,
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "mrr": 0.6666666666666666,
+        "context_precision": 0.18095238095238095,
+        "avg_context_chars": 2346.6666666666665,
+        "retrieval_ms_p50": 17.2,
+        "answer_accuracy": 1,
+        "fact_recall": 1.0,
+        "false_refusal_rate": 0,
+        "hallucination_rate": 0,
+        "generation_ms_p50": 579.6,
+        "generation_ms_p95": 1228.4,
+        "rate_limited_questions": 0
+      },
+      "insights": {
+        "questions": 3,
+        "context_hit_rate": 1,
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "mrr": 1.0,
+        "context_precision": 0.21666666666666667,
+        "avg_context_chars": 1336.3333333333333,
+        "retrieval_ms_p50": 14.8,
+        "answer_accuracy": 1,
+        "fact_recall": 1.0,
+        "false_refusal_rate": 0,
+        "hallucination_rate": 0,
+        "generation_ms_p50": 683.5,
+        "generation_ms_p95": 687.2,
+        "rate_limited_questions": 0
+      },
+      "repository": {
+        "questions": 9,
+        "context_hit_rate": 1,
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "mrr": 1.0,
+        "context_precision": 0.20185185185185187,
+        "avg_context_chars": 2481.6666666666665,
+        "retrieval_ms_p50": 16.1,
+        "answer_accuracy": 1,
+        "fact_recall": 1.0,
+        "false_refusal_rate": 0,
+        "hallucination_rate": 0,
+        "generation_ms_p50": 634.2,
+        "generation_ms_p95": 1046.5,
+        "rate_limited_questions": 0
+      },
+      "resume": {
+        "questions": 6,
+        "context_hit_rate": 1,
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "mrr": 1.0,
+        "context_precision": 0.19722222222222222,
+        "avg_context_chars": 1421.5,
+        "retrieval_ms_p50": 16.2,
+        "answer_accuracy": 1,
+        "fact_recall": 1.0,
+        "false_refusal_rate": 0,
+        "hallucination_rate": 0,
+        "generation_ms_p50": 675.1,
+        "generation_ms_p95": 1462.3,
+        "rate_limited_questions": 0
+      },
+      "unanswerable": {
+        "questions": 5,
+        "avg_context_chars": 1646.2,
+        "retrieval_ms_p50": 15.8,
+        "answer_accuracy": 1,
+        "abstention_accuracy": 1,
+        "hallucination_rate": 0,
+        "generation_ms_p50": 807.8,
+        "generation_ms_p95": 1392.1,
+        "rate_limited_questions": 0
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "F01",
+      "category": "factual",
+      "question": "How many problems have I solved on LeetCode?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 1576,
+        "context_docs": 5
+      },
+      "retrieval_ms": 17.5,
+      "context_docs": [
+        "leetcode/coding_platform/leetcode",
+        "geeksforgeeks/coding_platform/geeksforgeeks",
+        "profile/overview/overview",
+        "activity/activity_summary/activity",
+        "developer_intelligence/strength/"
+      ],
+      "generation_ms": 2363.8,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "You have solved 412 problems on LeetCode.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "F02",
+      "category": "factual",
+      "question": "What is my LeetCode contest rating?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 1591,
+        "context_docs": 5
+      },
+      "retrieval_ms": 13.3,
+      "context_docs": [
+        "leetcode/coding_platform/leetcode",
+        "developer_intelligence/score/",
+        "profile/overview/overview",
+        "activity/activity_summary/activity",
+        "resume/summary/resume"
+      ],
+      "generation_ms": 554.5,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "Your LeetCode contest rating is 1847.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "F03",
+      "category": "factual",
+      "question": "How many hard problems have I solved on LeetCode?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.25,
+        "context_chars": 1350,
+        "context_docs": 4
+      },
+      "retrieval_ms": 15.0,
+      "context_docs": [
+        "leetcode/coding_platform/leetcode",
+        "geeksforgeeks/coding_platform/geeksforgeeks",
+        "profile/overview/overview",
+        "activity/activity_summary/activity"
+      ],
+      "generation_ms": 288.2,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "43 hard problems have been solved on LeetCode.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "F04",
+      "category": "factual",
+      "question": "What's my GeeksforGeeks coding score?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 1812,
+        "context_docs": 5
+      },
+      "retrieval_ms": 16.3,
+      "context_docs": [
+        "geeksforgeeks/coding_platform/geeksforgeeks",
+        "developer_intelligence/score/",
+        "profile/overview/overview",
+        "activity/activity_summary/activity",
+        "resume/summary/resume"
+      ],
+      "generation_ms": 391.9,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "512",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "F05",
+      "category": "factual",
+      "question": "What is my longest problem of the day streak on GFG?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 1392,
+        "context_docs": 5
+      },
+      "retrieval_ms": 15.6,
+      "context_docs": [
+        "geeksforgeeks/coding_platform/geeksforgeeks",
+        "leetcode/coding_platform/leetcode",
+        "activity/activity_summary/activity",
+        "resume/achievement/",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 393.9,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "Your longest problem\u2011of\u2011the\u2011day streak on GFG is 23 days.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "F06",
+      "category": "factual",
+      "question": "Which programming languages have I used on GeeksforGeeks?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.25,
+        "context_chars": 1333,
+        "context_docs": 4
+      },
+      "retrieval_ms": 17.6,
+      "context_docs": [
+        "geeksforgeeks/coding_platform/geeksforgeeks",
+        "profile/overview/overview",
+        "developer_intelligence/strength/",
+        "activity/activity_summary/activity"
+      ],
+      "generation_ms": 549.3,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "- cpp\n- python\n- java",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "F07",
+      "category": "factual",
+      "question": "What is my institute rank on GeeksforGeeks?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 1690,
+        "context_docs": 5
+      },
+      "retrieval_ms": 15.2,
+      "context_docs": [
+        "geeksforgeeks/coding_platform/geeksforgeeks",
+        "developer_intelligence/score/",
+        "resume/education/Pacific Institute of Technology",
+        "profile/overview/overview",
+        "resume/summary/resume"
+      ],
+      "generation_ms": 693.3,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "Your institute rank on GeeksforGeeks is 37.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "F08",
+      "category": "factual",
+      "question": "How many followers do I have on GitHub?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.25,
+        "context_chars": 2136,
+        "context_docs": 4
+      },
+      "retrieval_ms": 16.4,
+      "context_docs": [
+        "profile/overview/overview",
+        "github/repo_catalog/catalog",
+        "activity/activity_summary/activity",
+        "knowledge_graph_relationships/repo_tech_skills/pulse-monitor"
+      ],
+      "generation_ms": 333.0,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "You have 48 followers on GitHub.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "F09",
+      "category": "factual",
+      "question": "How many commits and pull requests do I have on GitHub?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.25,
+        "context_chars": 2136,
+        "context_docs": 4
+      },
+      "retrieval_ms": 15.4,
+      "context_docs": [
+        "profile/overview/overview",
+        "github/repo_catalog/catalog",
+        "activity/activity_summary/activity",
+        "knowledge_graph_relationships/repo_tech_skills/pulse-monitor"
+      ],
+      "generation_ms": 665.4,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "You have 1312 commits and 57 pull requests on GitHub.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "F10",
+      "category": "factual",
+      "question": "What is my overall developer score?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.4,
+        "context_chars": 1631,
+        "context_docs": 5
+      },
+      "retrieval_ms": 17.7,
+      "context_docs": [
+        "developer_intelligence/score/",
+        "profile/overview/overview",
+        "developer_intelligence/strength/",
+        "knowledge_graph/skill/",
+        "resume/summary/resume"
+      ],
+      "generation_ms": 712.1,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "Your overall developer score is 69/100.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "F11",
+      "category": "factual",
+      "question": "What is my DSA score?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 0.3333333333333333,
+        "context_precision": 0.16666666666666666,
+        "context_chars": 2063,
+        "context_docs": 6
+      },
+      "retrieval_ms": 14.6,
+      "context_docs": [
+        "geeksforgeeks/coding_platform/geeksforgeeks",
+        "leetcode/coding_platform/leetcode",
+        "developer_intelligence/score/",
+        "developer_intelligence/strength/",
+        "resume/summary/resume",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 555.3,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "Your DSA score is 74.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "R01",
+      "category": "repository",
+      "question": "What libraries does ledgerly use?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 2856,
+        "context_docs": 5
+      },
+      "retrieval_ms": 15.8,
+      "context_docs": [
+        "github/repository/ledgerly",
+        "knowledge_graph_relationships/repo_tech_skills/ledgerly",
+        "resume/project/Ledgerly",
+        "github/repo_catalog/catalog",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 883.2,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "- react\n- react-dom\n- vite\n- zustand\n- recharts\n- express\n- prisma\n- @prisma/client\n- zod\n- jsonwebtoken\n- vitest",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "R02",
+      "category": "repository",
+      "question": "Which ORM or database library does trailmix-api use?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 1611,
+        "context_docs": 5
+      },
+      "retrieval_ms": 20.1,
+      "context_docs": [
+        "github/repository/trailmix-api",
+        "knowledge_graph_relationships/repo_tech_skills/trailmix-api",
+        "resume/project/Trailmix API",
+        "developer_intelligence/recommendation/",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 722.3,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "trailmix\u2011api uses SQLAlchemy as its ORM and psycopg2\u2011binary to connect to PostgreSQL.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "R03",
+      "category": "repository",
+      "question": "What language is pulse-monitor written in?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 2672,
+        "context_docs": 5
+      },
+      "retrieval_ms": 14.5,
+      "context_docs": [
+        "github/repository/pulse-monitor",
+        "knowledge_graph_relationships/repo_tech_skills/pulse-monitor",
+        "github/repo_catalog/catalog",
+        "github/repository/chatterbox",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 277.3,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "pulse-monitor is written in Go.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "R04",
+      "category": "repository",
+      "question": "Which model does sentiment-lens fine-tune?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 2723,
+        "context_docs": 5
+      },
+      "retrieval_ms": 16.1,
+      "context_docs": [
+        "github/repository/sentiment-lens",
+        "knowledge_graph_relationships/repo_tech_skills/sentiment-lens",
+        "github/repo_catalog/catalog",
+        "github/repository/docsy-search",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 634.2,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "It fine\u2011tunes a DistilBERT model.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "R05",
+      "category": "repository",
+      "question": "What is the live demo URL of ledgerly?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.16666666666666666,
+        "context_chars": 3263,
+        "context_docs": 6
+      },
+      "retrieval_ms": 13.0,
+      "context_docs": [
+        "github/repository/ledgerly",
+        "knowledge_graph_relationships/repo_tech_skills/ledgerly",
+        "resume/project/Ledgerly",
+        "github/repo_catalog/catalog",
+        "github/repository/portfolio-site",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 623.5,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "https://ledgerly.example.app",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "R06",
+      "category": "repository",
+      "question": "How many stars does pulse-monitor have?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.25,
+        "context_chars": 2270,
+        "context_docs": 4
+      },
+      "retrieval_ms": 17.8,
+      "context_docs": [
+        "github/repository/pulse-monitor",
+        "knowledge_graph_relationships/repo_tech_skills/pulse-monitor",
+        "github/repo_catalog/catalog",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 430.4,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "22",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "R07",
+      "category": "repository",
+      "question": "Is trailmix-api containerized with Docker?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 2616,
+        "context_docs": 5
+      },
+      "retrieval_ms": 15.3,
+      "context_docs": [
+        "github/repository/trailmix-api",
+        "knowledge_graph_relationships/repo_tech_skills/trailmix-api",
+        "resume/project/Trailmix API",
+        "github/repo_catalog/catalog",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 934.4,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "Yes, trailmix\u2011api is containerized with Docker.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "R08",
+      "category": "repository",
+      "question": "What does chatterbox use for real-time messaging?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 2713,
+        "context_docs": 5
+      },
+      "retrieval_ms": 19.9,
+      "context_docs": [
+        "github/repository/chatterbox",
+        "knowledge_graph_relationships/repo_tech_skills/chatterbox",
+        "github/repository/pulse-monitor",
+        "github/repo_catalog/catalog",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 1046.5,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "Chatterbox uses Socket.io for real\u2011time messaging.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "R09",
+      "category": "repository",
+      "question": "Which testing framework does trailmix api use?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 1611,
+        "context_docs": 5
+      },
+      "retrieval_ms": 16.8,
+      "context_docs": [
+        "github/repository/trailmix-api",
+        "knowledge_graph_relationships/repo_tech_skills/trailmix-api",
+        "resume/project/Trailmix API",
+        "developer_intelligence/recommendation/",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 621.6,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "The trailmix\u2011api repository uses pytest as its testing framework.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "A01",
+      "category": "aggregation",
+      "question": "Which of my repositories use React?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.8,
+        "context_chars": 2933,
+        "context_docs": 5
+      },
+      "retrieval_ms": 17.1,
+      "context_docs": [
+        "github/repo_catalog/catalog",
+        "github/repository/portfolio-site",
+        "github/repository/chatterbox",
+        "github/repository/ledgerly",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 624.7,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "- ledgerly\n- chatterbox\n- portfolio-site",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "A02",
+      "category": "aggregation",
+      "question": "Which of my repositories are written in Python?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.8,
+        "context_chars": 2748,
+        "context_docs": 5
+      },
+      "retrieval_ms": 19.2,
+      "context_docs": [
+        "github/repo_catalog/catalog",
+        "github/repository/trailmix-api",
+        "github/repository/docsy-search",
+        "github/repository/weather-cli",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 788.7,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "- trailmix-api\n- docsy-search\n- weather-cli\n\nThese are the repositories in your profile that are written in Python.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "A03",
+      "category": "aggregation",
+      "question": "How many problems have I solved in total across LeetCode and GeeksforGeeks?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.4,
+        "context_chars": 1576,
+        "context_docs": 5
+      },
+      "retrieval_ms": 15.8,
+      "context_docs": [
+        "geeksforgeeks/coding_platform/geeksforgeeks",
+        "leetcode/coding_platform/leetcode",
+        "profile/overview/overview",
+        "developer_intelligence/strength/",
+        "activity/activity_summary/activity"
+      ],
+      "generation_ms": 795.5,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "You have solved 568 problems in total across LeetCode and GeeksforGeeks.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "A04",
+      "category": "aggregation",
+      "question": "List my projects that use FastAPI.",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.5,
+        "context_chars": 2685,
+        "context_docs": 6
+      },
+      "retrieval_ms": 16.6,
+      "context_docs": [
+        "github/repo_catalog/catalog",
+        "resume/project/Trailmix API",
+        "developer_intelligence/recommendation/",
+        "knowledge_graph_relationships/repo_tech_skills/trailmix-api",
+        "knowledge_graph_relationships/repo_tech_skills/docsy-search",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 257.0,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "- trailmix-api\n- docsy-search",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "A05",
+      "category": "aggregation",
+      "question": "How many public repositories do I have?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 0.3333333333333333,
+        "context_precision": 0.25,
+        "context_chars": 2262,
+        "context_docs": 4
+      },
+      "retrieval_ms": 15.1,
+      "context_docs": [
+        "github/repo_catalog/catalog",
+        "developer_intelligence/weakness/",
+        "profile/overview/overview",
+        "knowledge_graph_relationships/repo_tech_skills/ledgerly"
+      ],
+      "generation_ms": 526.6,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "You have 12 public repositories.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "A06",
+      "category": "aggregation",
+      "question": "Which of my repos have CI/CD set up with GitHub Actions?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.25,
+        "context_chars": 2359,
+        "context_docs": 4
+      },
+      "retrieval_ms": 17.5,
+      "context_docs": [
+        "github/repo_catalog/catalog",
+        "knowledge_graph_relationships/repo_tech_skills/pulse-monitor",
+        "knowledge_graph_relationships/repo_tech_skills/ledgerly",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 754.1,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "- ledgerly\n- pulse-monitor",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "A07",
+      "category": "aggregation",
+      "question": "What is my most starred repository?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 2577,
+        "context_docs": 5
+      },
+      "retrieval_ms": 15.6,
+      "context_docs": [
+        "github/repo_catalog/catalog",
+        "activity/activity_summary/activity",
+        "knowledge_graph_relationships/repo_tech_skills/ledgerly",
+        "knowledge_graph_relationships/repo_tech_skills/pulse-monitor",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 548.2,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "Your most starred repository is ledgerly, with 31 stars.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "C01",
+      "category": "resume",
+      "question": "Where did I do my internship?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.16666666666666666,
+        "context_chars": 1994,
+        "context_docs": 6
+      },
+      "retrieval_ms": 15.2,
+      "context_docs": [
+        "resume/experience/Northwind Logistics",
+        "resume/experience/Pacific Institute of Technology",
+        "resume/summary/resume",
+        "resume/skill/",
+        "knowledge_graph/skill/",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 417.6,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "You did your internship at Northwind Logistics.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "C02",
+      "category": "resume",
+      "question": "By how much did I reduce API latency during my internship?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.16666666666666666,
+        "context_chars": 1817,
+        "context_docs": 6
+      },
+      "retrieval_ms": 16.5,
+      "context_docs": [
+        "resume/experience/Northwind Logistics",
+        "resume/experience/Pacific Institute of Technology",
+        "developer_intelligence/recommendation/",
+        "knowledge_graph_relationships/repo_tech_skills/trailmix-api",
+        "resume/project/Trailmix API",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 276.2,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "You reduced API latency by 510\u202fms (from 820\u202fms to 310\u202fms).",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "C03",
+      "category": "resume",
+      "question": "What degree am I studying and what is my GPA?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 1131,
+        "context_docs": 5
+      },
+      "retrieval_ms": 18.3,
+      "context_docs": [
+        "resume/education/Pacific Institute of Technology",
+        "resume/certification/",
+        "developer_intelligence/score/",
+        "knowledge_graph/skill/",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 675.1,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "You are studying a B.S. in Computer Science at Pacific Institute of Technology, and your GPA is 3.7/4.0.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "C04",
+      "category": "resume",
+      "question": "What certifications do I have?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 1216,
+        "context_docs": 5
+      },
+      "retrieval_ms": 16.2,
+      "context_docs": [
+        "resume/certification/",
+        "knowledge_graph/skill/",
+        "resume/skill/",
+        "developer_intelligence/score/",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 1058.9,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "You have the following certifications:\n- AWS Certified Cloud Practitioner (Amazon Web Services)\n- Google Data Analytics Certificate (Coursera)",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "C05",
+      "category": "resume",
+      "question": "Have I won any hackathons?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.25,
+        "context_chars": 791,
+        "context_docs": 4
+      },
+      "retrieval_ms": 17.8,
+      "context_docs": [
+        "resume/hackathon/",
+        "activity/activity_summary/activity",
+        "resume/achievement/",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 905.0,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "Yes, you won 2nd place at HackSeattle 2024 for an accessibility checker for websites.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "C06",
+      "category": "resume",
+      "question": "What is the target role on my resume?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 1580,
+        "context_docs": 5
+      },
+      "retrieval_ms": 15.2,
+      "context_docs": [
+        "resume/summary/resume",
+        "resume/skill/",
+        "knowledge_graph/skill/",
+        "resume/experience/Pacific Institute of Technology",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 1462.3,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "Full Stack Engineer",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "I01",
+      "category": "insights",
+      "question": "What are my weaknesses as a developer?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.25,
+        "context_chars": 1122,
+        "context_docs": 4
+      },
+      "retrieval_ms": 16.6,
+      "context_docs": [
+        "developer_intelligence/weakness/",
+        "developer_intelligence/strength/",
+        "profile/overview/overview",
+        "knowledge_graph/skill/"
+      ],
+      "generation_ms": 279.5,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "- Limited security practices (no auth hardening or security tests)\n- Few contributions to other people's repositories\n- Little cloud deployment beyond Vercel",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "I02",
+      "category": "insights",
+      "question": "What should I learn next?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 1564,
+        "context_docs": 5
+      },
+      "retrieval_ms": 14.7,
+      "context_docs": [
+        "developer_intelligence/roadmap/",
+        "knowledge_graph/skill/",
+        "resume/skill/",
+        "github/repository/sentiment-lens",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 683.5,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "You\u2019re already strong in TypeScript, Python, Go, and have a solid GitHub presence.\nNext steps that align with your roadmap and profile:\n\n- AWS fundamentals \u2013 start with the core services (EC2, S3, IAM) and move to Terraform for IaC.\n- Build a project that implements OAuth\u202f2.0 and refresh\u2011token flows (use FastAPI or Express).\n- Push your LeetCode rating above 1900 by focusing on medium\u2011hard problems in data structures & algorithms.\n- Draft a technical blog on Ledgerly\u2019s architecture to reinforce your software\u2011architecture knowledge.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "I03",
+      "category": "insights",
+      "question": "What are my main strengths?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 1323,
+        "context_docs": 5
+      },
+      "retrieval_ms": 14.8,
+      "context_docs": [
+        "developer_intelligence/strength/",
+        "knowledge_graph/skill/",
+        "developer_intelligence/score/",
+        "resume/skill/",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 687.2,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "Your main strengths are:\n\n- Strong TypeScript full\u2011stack development (React + Express + Prisma)\n- Consistent DSA practice (412 LeetCode and 156 GeeksforGeeks problems solved)\n- Experience with CI/CD and Docker in most projects\n- Solid backend skills (Express, FastAPI, Go, Python)\n- Frontend proficiency with React, Next.js, Vue\n- DevOps tools: Docker, Kubernetes, GitHub Actions\n- Good overall technical skill scores: backend 77, fullStack 72, dsa 74, productivity 70, interviewReadiness 71",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "T01",
+      "category": "activity",
+      "question": "How many hours have I coded recently?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 1560,
+        "context_docs": 5
+      },
+      "retrieval_ms": 18.0,
+      "context_docs": [
+        "activity/activity_summary/activity",
+        "leetcode/coding_platform/leetcode",
+        "geeksforgeeks/coding_platform/geeksforgeeks",
+        "resume/experience/Pacific Institute of Technology",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 618.5,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "You have coded 15.0 hours recently.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "T02",
+      "category": "activity",
+      "question": "What is my current coding streak?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.25,
+        "context_chars": 1350,
+        "context_docs": 4
+      },
+      "retrieval_ms": 15.1,
+      "context_docs": [
+        "activity/activity_summary/activity",
+        "geeksforgeeks/coding_platform/geeksforgeeks",
+        "profile/overview/overview",
+        "leetcode/coding_platform/leetcode"
+      ],
+      "generation_ms": 1740.2,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "Your current coding streak is 6 days.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "M01",
+      "category": "follow-up",
+      "question": "and chatterbox?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 0.5,
+        "context_precision": 0.14285714285714285,
+        "context_chars": 3592,
+        "context_docs": 7
+      },
+      "retrieval_ms": 17.2,
+      "context_docs": [
+        "github/repository/ledgerly",
+        "github/repository/chatterbox",
+        "knowledge_graph_relationships/repo_tech_skills/ledgerly",
+        "knowledge_graph_relationships/repo_tech_skills/chatterbox",
+        "resume/project/Ledgerly",
+        "github/repo_catalog/catalog",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 1228.4,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "Chatterbox uses express, socket.io, mongoose, bcrypt, jsonwebtoken, react, react-dom and tailwindcss.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "M02",
+      "category": "follow-up",
+      "question": "what about my score on gfg?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 0.5,
+        "context_precision": 0.2,
+        "context_chars": 1837,
+        "context_docs": 5
+      },
+      "retrieval_ms": 15.8,
+      "context_docs": [
+        "leetcode/coding_platform/leetcode",
+        "geeksforgeeks/coding_platform/geeksforgeeks",
+        "developer_intelligence/score/",
+        "profile/overview/overview",
+        "resume/summary/resume"
+      ],
+      "generation_ms": 579.6,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "Your GeeksforGeeks coding score is 512.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "M03",
+      "category": "follow-up",
+      "question": "which test framework does it use?",
+      "answerable": true,
+      "retrieval": {
+        "retrieved_recall": 1.0,
+        "context_recall": 1.0,
+        "context_hit": true,
+        "lost_to_budget": 0,
+        "mrr": 1.0,
+        "context_precision": 0.2,
+        "context_chars": 1611,
+        "context_docs": 5
+      },
+      "retrieval_ms": 17.8,
+      "context_docs": [
+        "github/repository/trailmix-api",
+        "knowledge_graph_relationships/repo_tech_skills/trailmix-api",
+        "resume/project/Trailmix API",
+        "developer_intelligence/recommendation/",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 336.0,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "It uses pytest.",
+      "answer_score": {
+        "correct": true,
+        "fact_recall": 1.0,
+        "missing": [],
+        "violations": [],
+        "abstained": false
+      }
+    },
+    {
+      "id": "U01",
+      "category": "unanswerable",
+      "question": "What is my Codeforces rating?",
+      "answerable": false,
+      "retrieval": {
+        "context_chars": 1150,
+        "context_docs": 4
+      },
+      "retrieval_ms": 15.8,
+      "context_docs": [
+        "developer_intelligence/score/",
+        "leetcode/coding_platform/leetcode",
+        "profile/overview/overview",
+        "developer_intelligence/roadmap/"
+      ],
+      "generation_ms": 403.8,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "I don't have that information in your profile yet. If you want to add it, connect your Codeforces account or click \"Update Knowledge Base\".",
+      "answer_score": {
+        "correct": true,
+        "abstained": true,
+        "violations": []
+      }
+    },
+    {
+      "id": "U02",
+      "category": "unanswerable",
+      "question": "What did I work on at Google?",
+      "answerable": false,
+      "retrieval": {
+        "context_chars": 1838,
+        "context_docs": 6
+      },
+      "retrieval_ms": 16.5,
+      "context_docs": [
+        "resume/experience/Northwind Logistics",
+        "resume/experience/Pacific Institute of Technology",
+        "resume/certification/",
+        "resume/skill/",
+        "resume/summary/resume",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 822.5,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "I don\u2019t have any information about work you did at Google in your profile.",
+      "answer_score": {
+        "correct": true,
+        "abstained": true,
+        "violations": []
+      }
+    },
+    {
+      "id": "U03",
+      "category": "unanswerable",
+      "question": "What is my Kaggle competition ranking?",
+      "answerable": false,
+      "retrieval": {
+        "context_chars": 1373,
+        "context_docs": 4
+      },
+      "retrieval_ms": 15.4,
+      "context_docs": [
+        "developer_intelligence/score/",
+        "leetcode/coding_platform/leetcode",
+        "resume/summary/resume",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 260.3,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "I don't have that information in your profile yet. If you want to add it, consider connecting your Kaggle account or updating your knowledge base.",
+      "answer_score": {
+        "correct": true,
+        "abstained": true,
+        "violations": []
+      }
+    },
+    {
+      "id": "U04",
+      "category": "unanswerable",
+      "question": "Which of my repositories is written in Rust?",
+      "answerable": false,
+      "retrieval": {
+        "context_chars": 2151,
+        "context_docs": 4
+      },
+      "retrieval_ms": 17.0,
+      "context_docs": [
+        "github/repo_catalog/catalog",
+        "profile/overview/overview",
+        "github/repository/recipe-box",
+        "developer_intelligence/weakness/"
+      ],
+      "generation_ms": 807.8,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "I don\u2019t have any Rust repositories in your profile.",
+      "answer_score": {
+        "correct": true,
+        "abstained": true,
+        "violations": []
+      }
+    },
+    {
+      "id": "U05",
+      "category": "unanswerable",
+      "question": "What salary did Northwind Logistics pay me?",
+      "answerable": false,
+      "retrieval": {
+        "context_chars": 1719,
+        "context_docs": 5
+      },
+      "retrieval_ms": 12.6,
+      "context_docs": [
+        "resume/experience/Northwind Logistics",
+        "resume/summary/resume",
+        "resume/skill/",
+        "resume/experience/Pacific Institute of Technology",
+        "profile/overview/overview"
+      ],
+      "generation_ms": 1392.1,
+      "rate_limit_wait_ms": 0.0,
+      "answer": "I don\u2019t have that information in your profile yet. You might want to check your employment records or connect the platform to update your knowledge base.",
+      "answer_score": {
+        "correct": true,
+        "abstained": true,
+        "violations": []
+      }
+    }
+  ]
+}

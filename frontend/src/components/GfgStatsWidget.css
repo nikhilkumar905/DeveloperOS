@@ -1,0 +1,16 @@
+.gfg-widget .metric-icon.gfg-solved { color: #2f8d46; }
+
+.gfg-widget .gfg-btn {
+  background: #2f8d46;
+  border-color: #2f8d46;
+}
+
+.gfg-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
