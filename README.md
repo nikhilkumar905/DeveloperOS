@@ -545,6 +545,10 @@ CI (`.github/workflows/ci.yml`) runs the backend import check, chat-service synt
 
 ## 🚀 Deploying to production
 
+**Step-by-step guide for Vercel (frontend) + Render (API and chat service): [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).** The repository already includes `render.yaml` (a Render Blueprint for both backend services) and `frontend/vercel.json` (build settings plus a proxy so the login cookie works across Vercel and Render).
+
+General checklist for any host:
+
 - Serve over **HTTPS** and set `APP_ENV=production`. Secure cookies and HSTS are enabled, and the interactive API docs are hidden.
 - Use a long random `JWT_SECRET`, identical for the API and chat service, and keep all secrets in the host's environment-variable settings, never in the repository.
 - Host the frontend and API on the **same site** (e.g. `app.example.com` + `api.example.com`) so the `SameSite=Strict` refresh cookie is sent. Set `FRONTEND_URL`, `CORS_ORIGINS`, `PUBLIC_API_URL` and `PUBLIC_CHAT_API_URL` accordingly, and update the GitHub and Google callback URLs.

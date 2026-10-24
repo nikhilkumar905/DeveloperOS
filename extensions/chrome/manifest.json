@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "PersonalOS — Developer Activity Tracker",
+  "name": "PersonalOS \u2014 Developer Activity Tracker",
   "version": "1.0.0",
   "description": "Automatically tracks your coding activity across GitHub, LeetCode, HackerRank, Codeforces, GeeksforGeeks, and Stack Overflow and syncs it to your PersonalOS dashboard.",
   "permissions": [
@@ -117,8 +117,16 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["content/leetcode-inject.js"],
-      "matches": ["https://leetcode.com/*"]
+      "resources": [
+        "content/leetcode-inject.js"
+      ],
+      "matches": [
+        "https://leetcode.com/*"
+      ]
     }
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
   ]
 }

@@ -96,9 +96,21 @@ const DEFAULT_SETTINGS: ExtensionSettings = {
 
 // ─── Main Popup Component ─────────────────────────────────────────────────────
 
+// The local API runs on :6500 with its dashboard on :6501; a deployed app serves both from one origin
+const dashboardUrl = (server: string): string => {
+  try {
+    const u = new URL(server);
+    if (u.port === '6500') u.port = '6501';
+    return `${u.origin}/dashboard`;
+  } catch {
+    return 'http://localhost:6501/dashboard';
+  }
+};
+
 const Popup: React.FC = () => {
   const [settings, setSettings] = useState<ExtensionSettings>(DEFAULT_SETTINGS);
   const [tokenInput, setTokenInput] = useState('');
+  const [serverInput, setServerInput] = useState(DEFAULT_SETTINGS.backendUrl);
   const [isConnected, setIsConnected] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [syncing, setSyncing] = useState(false);
@@ -116,6 +128,7 @@ const Popup: React.FC = () => {
     chrome.storage.local.get(SETTINGS_KEY, (result) => {
       const s: ExtensionSettings = result[SETTINGS_KEY] || DEFAULT_SETTINGS;
       setSettings(s);
+      setServerInput(s.backendUrl || DEFAULT_SETTINGS.backendUrl);
       setIsConnected(!!s.token);
     });
   }, []);
@@ -160,7 +173,24 @@ const Popup: React.FC = () => {
       setMessage({ text: 'Please paste your PersonalOS token.', type: 'error' });
       return;
     }
-    const newSettings = { ...settings, token: tokenInput.trim() };
+    let serverUrl: URL;
+    try {
+      serverUrl = new URL(serverInput.trim());
+    } catch {
+      setMessage({ text: 'Enter a valid server URL, e.g. https://your-app.vercel.app', type: 'error' });
+      return;
+    }
+    const isLocal = ['localhost', '127.0.0.1'].includes(serverUrl.hostname);
+    if (!isLocal) {
+      // Ask Chrome for access to this server only (must happen inside the click handler)
+      const granted = await chrome.permissions.request({ origins: [`${serverUrl.origin}/*`] });
+      if (!granted) {
+        setMessage({ text: 'Permission to reach your server is needed to sync activity.', type: 'error' });
+        return;
+      }
+    }
+    const backendUrl = serverUrl.origin + serverUrl.pathname.replace(/\/+$/, '');
+    const newSettings = { ...settings, token: tokenInput.trim(), backendUrl };
     await chrome.storage.local.set({ [SETTINGS_KEY]: newSettings });
     setSettings(newSettings);
     setIsConnected(true);
@@ -236,6 +266,14 @@ const Popup: React.FC = () => {
             </div>
           </div>
           <input
+            type="url"
+            className="token-input"
+            placeholder="Server URL, e.g. https://your-app.vercel.app"
+            value={serverInput}
+            onChange={(e) => setServerInput(e.target.value)}
+            aria-label="PersonalOS server URL"
+          />
+          <input
             type="password"
             className="token-input"
             placeholder="Paste your PersonalOS token..."
@@ -253,8 +291,8 @@ const Popup: React.FC = () => {
           </button>
           <span className="hint">
             Get your token from{' '}
-            <a href="http://localhost:6501/dashboard" target="_blank" rel="noreferrer">
-              PersonalOS Dashboard → Settings
+            <a href={dashboardUrl(serverInput)} target="_blank" rel="noreferrer">
+              PersonalOS Dashboard → Activity Tracker → Copy Token
             </a>
           </span>
         </div>
