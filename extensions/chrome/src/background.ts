@@ -20,7 +20,7 @@ const FLUSH_INTERVAL_MINUTES = 1;
 
 const DEFAULT_SETTINGS: ExtensionSettings = {
   token: '',
-  backendUrl: 'http://127.0.0.1:6500',
+  backendUrl: 'https://api.developeros.page',  // change in the popup for local/self-hosted setups
   platforms: {
     github: true,
     leetcode: true,

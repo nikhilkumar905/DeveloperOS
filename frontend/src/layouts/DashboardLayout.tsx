@@ -1,16 +1,30 @@
-import React, { useContext, useRef } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
-import { Terminal, LayoutDashboard, UserCircle, LogOut, FileText, Globe, Zap } from 'lucide-react';
+import { AuthContext, authHttp } from '../context/AuthContext';
+import { Terminal, LayoutDashboard, UserCircle, LogOut, FileText, Globe, Zap, ChevronDown } from 'lucide-react';
 import { useAutoSync } from '../hooks/useAutoSync';
 import { ChatWidget } from '../components/ChatWidget';
 import ThemeToggle from '../components/ThemeToggle';
 
 const DashboardLayout: React.FC = () => {
-  const { user, token, logout, isLoading } = useContext(AuthContext);
+  const { user, token, logout, isLoading, getValidToken } = useContext(AuthContext);
   // A deliberate logout goes to the landing page; an expired/missing session still goes to /login
   const loggingOut = useRef(false);
   const handleLogout = () => {
+    loggingOut.current = true;
+    logout();
+  };
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  // Revokes every session and the browser extension's token, then logs out here
+  const handleLogoutEverywhere = async () => {
+    if (!window.confirm('Log out on every device and disconnect the browser extension?')) return;
+    try {
+      const fresh = await getValidToken();
+      await authHttp.post('/api/auth/logout-all', {}, { headers: { Authorization: `Bearer ${fresh}` } });
+    } catch (err) {
+      console.error('Could not log out everywhere', err);
+    }
     loggingOut.current = true;
     logout();
   };
@@ -100,11 +114,35 @@ const DashboardLayout: React.FC = () => {
         {/* Right: Theme + User + Logout */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <ThemeToggle />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-soft)' }}>
-            <UserCircle size={19} />
-            <span style={{ fontWeight: 500, fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '150px' }}>
-              {user.name}
-            </span>
+          <div style={{ position: 'relative' }} onMouseLeave={() => setMenuOpen(false)}>
+            <button
+              onClick={() => setMenuOpen(open => !open)}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-soft)', padding: '0.4rem 0.5rem', borderRadius: 'var(--radius-md)' }}
+            >
+              <UserCircle size={19} />
+              <span style={{ fontWeight: 500, fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '150px' }}>
+                {user.name}
+              </span>
+              <ChevronDown size={15} />
+            </button>
+            {menuOpen && (
+              <div role="menu" style={{ position: 'absolute', right: 0, top: '100%', minWidth: '220px', background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-lg)', padding: '0.35rem', zIndex: 60 }}>
+                <div style={{ padding: '0.5rem 0.65rem', fontSize: '0.8rem', color: 'var(--text-muted)', borderBottom: '1px solid var(--border-color)', marginBottom: '0.25rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {user.email}
+                </div>
+                <Link role="menuitem" to="/extension" style={{ display: 'block', padding: '0.5rem 0.65rem', fontSize: '0.88rem', color: 'var(--text-main)', borderRadius: 'var(--radius-sm)' }}>
+                  Browser extension
+                </Link>
+                <Link role="menuitem" to="/privacy" style={{ display: 'block', padding: '0.5rem 0.65rem', fontSize: '0.88rem', color: 'var(--text-main)', borderRadius: 'var(--radius-sm)' }}>
+                  Privacy policy
+                </Link>
+                <button role="menuitem" onClick={handleLogoutEverywhere} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.65rem', fontSize: '0.88rem', color: 'var(--danger)', borderRadius: 'var(--radius-sm)' }}>
+                  Log out of all devices
+                </button>
+              </div>
+            )}
           </div>
           <button
             onClick={handleLogout}

@@ -9,6 +9,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import AuthCallback from './pages/AuthCallback';
+import ExtensionPage from './pages/ExtensionPage';
+import PrivacyPage from './pages/PrivacyPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import DashboardHome from './pages/DashboardHome';
 import ResumeStudio from './pages/ResumeStudio';
@@ -27,6 +29,8 @@ const App: React.FC = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/extension" element={<ExtensionPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           
           {/* Protected Routes */}
           <Route path="/dashboard" element={<DashboardLayout />}>

@@ -138,12 +138,9 @@ const ActivityWidget: React.FC = () => {
             on GitHub, LeetCode, and more.
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
-            <button
-              className="aw-install-btn"
-              onClick={() => window.open('chrome://extensions', '_blank')}
-            >
-              📦 Load Extension
-            </button>
+            <Link className="aw-install-btn" to="/extension">
+              📦 Get the Extension
+            </Link>
             <button
               className="aw-install-btn"
               style={{ background: '#3b82f6' }}
