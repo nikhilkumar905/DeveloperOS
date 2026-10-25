@@ -10,7 +10,7 @@ services:
     restart: unless-stopped
     # Only reachable from this machine; the other containers use the internal network name "mongo"
     ports:
-      - "127.0.0.1:27017:27017"
+      - "127.0.0.1:${MONGO_HOST_PORT:-27017}:27017"
     volumes:
       - mongo_data:/data/db
     healthcheck:

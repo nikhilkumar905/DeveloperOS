@@ -31,6 +31,7 @@
 
 ## 📑 Table of contents
 
+0. [**Run locally: command cheat sheet**](#-run-locally-command-cheat-sheet)
 1. [What it does](#-what-it-does)
 2. [Screenshots](#-screenshots)
 3. [Features in depth](#-features-in-depth)
@@ -50,6 +51,60 @@
 17. [Troubleshooting](#-troubleshooting)
 18. [Deploying to production](#-deploying-to-production)
 19. [License](#-license)
+
+---
+
+## ⚡ Run locally: command cheat sheet
+
+Everything you need to run the project on your own computer, in one place. All commands start from the project folder.
+
+### Option A: Docker (recommended, one command)
+
+```bash
+cd DeveloperOS                         # the project folder
+docker compose up -d                   # start everything (add --build after changing code)
+docker compose ps                      # all services should show "healthy"
+```
+
+Open **http://localhost:6501**. The API is http://localhost:6500/api/health and the chat service is http://localhost:6502/api/health.
+
+```bash
+docker compose logs -f backend         # watch logs (backend | chat | frontend | mongo)
+docker compose restart backend         # after editing .env
+docker compose up -d --build           # after pulling or changing code
+docker compose down                    # stop everything (data is kept)
+```
+
+**First time only:** `cp .env.example .env`, then set `JWT_SECRET` in `.env` (plus your Atlas URI and keys if you use them). If startup fails with *port 27017 is already allocated*, a MongoDB installed on your computer is using that port, so set `MONGO_HOST_PORT=27019` in `.env`.
+
+### Option B: Without Docker (4 terminals)
+
+Needs Python 3.12, Node.js 22 and MongoDB, either local or Atlas. Each service reads its own `.env` file. The first-time setup for each one is described [further down](#-running-each-service-without-docker).
+
+```bash
+# Terminal 1: main API → http://localhost:6500
+cd fastapi-backend && source .venv/bin/activate && python -m uvicorn main:app --port 6500 --reload
+
+# Terminal 2: chat service → http://localhost:6502
+cd chat-service && source .venv/bin/activate && python main.py
+
+# Terminal 3: website → http://localhost:6501
+cd frontend && npm run dev -- --port 6501
+
+# Terminal 4 (optional): rebuild the browser extension after changing it
+cd extensions/chrome && npm run build          # then reload it in chrome://extensions
+```
+
+Stop a service with **Ctrl + C** in its terminal. If a port is still busy, free it with `kill $(lsof -t -i :6500)` (change the port number to 6501 or 6502 as needed).
+
+### Handy extras
+
+| Task | Command |
+|---|---|
+| Lint and build the frontend | `cd frontend && npm run lint && npm run build` |
+| Package the extension for the website download | `cd extensions/chrome && npm run package && cp developeros-extension.zip ../../frontend/public/downloads/` |
+| Run the RAG evaluation | `cd chat-service && source .venv/bin/activate && python eval/run_eval.py --label dev --retrieval-only` |
+| Remove containers **and** local Docker data | `docker compose down -v` (irreversible; Atlas is not affected) |
 
 ---
 
