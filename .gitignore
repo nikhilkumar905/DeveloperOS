@@ -64,3 +64,6 @@ fastapi-backend/venv/
 .venv/
 __pycache__/
 *.pyc
+
+# Packaged browser extension (published copy lives in frontend/public/downloads)
+extensions/chrome/developeros-extension.zip

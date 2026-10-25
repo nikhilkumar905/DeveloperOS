@@ -4,6 +4,15 @@ All notable changes to DeveloperOS will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v200.html).
 
+## [Unreleased]
+
+### Added
+- **Browser extension distribution:** a `/extension` page with a download and install guide, and a `/privacy` policy page. The extension packages with `npm run package`. Chrome Web Store guide in `docs/EXTENSION.md`.
+- Account menu with **Log out of all devices**, and **Clear all activity** on the Activity Tracker page.
+
+### Changed
+- Extension 1.1.0: the server defaults to `https://api.developeros.page` and can be changed in the popup (for local or self-hosted servers). Unused permissions were removed.
+
 ## [2.0.0] - 2026-10-25
 
 ### Changed

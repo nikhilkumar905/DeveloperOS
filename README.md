@@ -22,6 +22,8 @@
 |---|---|
 | **Source code** | https://github.com/nikhilkumar905/DeveloperOS |
 | **Live demo** | https://developeros.page |
+| **Browser extension** | https://developeros.page/extension (install guide and download) |
+| **Privacy policy** | https://developeros.page/privacy |
 
 > The app is branded **PersonalOS** in its interface; the project and repository are called **DeveloperOS**.
 
@@ -320,7 +322,10 @@ npm run build                           # outputs extensions/chrome/dist
 ```
 
 1. Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked** and pick `extensions/chrome/dist`.
-2. In the app, open the **Activity Tracker** widget, click **Copy Token**, and paste it into the extension popup. This token can only log and read activity.
+2. In the popup, set **Server URL** to your API (`http://localhost:6500` locally; the default is `https://api.developeros.page`).
+3. In the app, open the **Activity Tracker** widget, click **Copy Token**, and paste it into the extension popup. This token can only log and read activity.
+
+`npm run package` builds the extension and creates `developeros-extension.zip`, the file served from `frontend/public/downloads/` for the website's download button. **End users** get the extension from the [/extension](https://developeros.page/extension) page. To publish it on the Chrome Web Store, see [docs/EXTENSION.md](docs/EXTENSION.md).
 
 ### Running only part of the stack
 
@@ -544,7 +549,7 @@ CI (`.github/workflows/ci.yml`) runs the backend import check, chat-service synt
 
 ## 🚀 Deploying to production
 
-**Step-by-step guide for deploying on `developeros.page` with Vercel (frontend) + Render (API and chat service): [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).** The repository already includes `render.yaml` (a Render Blueprint for both backend services) and `frontend/vercel.json` (build settings and page routing).
+**Step-by-step guide for deploying on `developeros.page` with Vercel (frontend) + Render (API and chat service): [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).** Distributing the browser extension (website download and Chrome Web Store): [docs/EXTENSION.md](docs/EXTENSION.md). The repository already includes `render.yaml` (a Render Blueprint for both backend services) and `frontend/vercel.json` (build settings and page routing).
 
 General checklist for any host:
 

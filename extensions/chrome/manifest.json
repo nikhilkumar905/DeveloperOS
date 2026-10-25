@@ -1,15 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "PersonalOS \u2014 Developer Activity Tracker",
-  "version": "1.0.0",
-  "description": "Automatically tracks your coding activity across GitHub, LeetCode, HackerRank, Codeforces, GeeksforGeeks, and Stack Overflow and syncs it to your PersonalOS dashboard.",
+  "name": "DeveloperOS \u2014 Developer Activity Tracker",
+  "version": "1.1.0",
+  "description": "Tracks your coding activity on GitHub, LeetCode, GeeksforGeeks, HackerRank, Codeforces and Stack Overflow and syncs it to your DeveloperOS dashboard.",
   "permissions": [
     "storage",
     "alarms",
-    "tabs",
-    "activeTab",
-    "scripting",
-    "notifications"
+    "tabs"
   ],
   "host_permissions": [
     "https://github.com/*",
@@ -24,7 +21,8 @@
     "https://docs.python.org/*",
     "https://nodejs.org/*",
     "http://localhost:6500/*",
-    "http://127.0.0.1:6500/*"
+    "http://127.0.0.1:6500/*",
+    "https://api.developeros.page/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -128,5 +126,6 @@
   "optional_host_permissions": [
     "https://*/*",
     "http://*/*"
-  ]
+  ],
+  "homepage_url": "https://developeros.page"
 }

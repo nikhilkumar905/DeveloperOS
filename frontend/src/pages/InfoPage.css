@@ -1,0 +1,103 @@
+.info-page {
+  min-height: 100vh;
+  background: var(--bg-color);
+  padding: 6rem 1.25rem 4rem;
+  position: relative;
+}
+
+.info-content {
+  max-width: 780px;
+  margin: 0 auto;
+  color: var(--text-soft);
+  line-height: 1.65;
+}
+
+.info-content h1 {
+  font-size: 2rem;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.info-content .info-lead {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+
+.info-content h2 {
+  font-size: 1.25rem;
+  color: var(--text-main);
+  margin: 2.25rem 0 0.75rem;
+}
+
+.info-content h3 {
+  font-size: 1rem;
+  color: var(--text-main);
+  margin: 1.25rem 0 0.5rem;
+}
+
+.info-content p,
+.info-content li {
+  margin-bottom: 0.5rem;
+}
+
+.info-content ul,
+.info-content ol {
+  padding-left: 1.4rem;
+  margin-bottom: 1rem;
+}
+
+.info-content a:not(.btn) {
+  color: var(--primary);
+}
+
+.info-content a:not(.btn):hover {
+  text-decoration: underline;
+}
+
+.info-content code {
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.88em;
+  color: var(--text-main);
+}
+
+.info-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.info-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.info-actions .btn {
+  gap: 0.5rem;
+}
+
+.info-note {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.info-footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.info-footer-links a:hover {
+  color: var(--text-main);
+}

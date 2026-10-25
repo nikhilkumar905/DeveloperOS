@@ -1,12 +1,13 @@
 {
   "name": "personalos-extension",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "PersonalOS Browser Extension - Automatic Developer Activity Tracking",
   "private": true,
   "scripts": {
     "dev": "webpack --mode development --watch",
     "build": "webpack --mode production",
-    "build:dev": "webpack --mode development"
+    "build:dev": "webpack --mode development",
+    "package": "npm run build && rm -f developeros-extension.zip && cd dist && zip -qr ../developeros-extension.zip . -x '*.map' && cd .. && echo 'Created developeros-extension.zip'"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",
