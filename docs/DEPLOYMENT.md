@@ -127,7 +127,7 @@ Google Cloud Console → **APIs & Services** (Google Auth Platform) for your pro
    - Set the **Application home page** to `https://developeros.page`.
 3. **Audience:**
    - While the app is in **Testing**, only the Google accounts listed under **Test users** can sign in. Add yours and your testers'.
-   - To let anyone sign in, click **Publish app**. Google asks for a privacy-policy link on your domain before publishing, so add that page first.
+   - To let anyone sign in, click **Publish app**. Google asks for a privacy-policy link on your domain; use `https://developeros.page/privacy`.
 
 You can keep the existing `localhost` entries so local development keeps working.
 
@@ -154,11 +154,15 @@ Put its client ID and secret into **developeros-api → Environment** on Render.
 
 ---
 
-## Step 8. Chrome extension
+## Step 8. Browser extension
 
-1. `cd extensions/chrome && npm install && npm run build`, then Chrome → `chrome://extensions` → **Developer mode** → **Load unpacked** → `extensions/chrome/dist`.
-2. In the popup, set **Server URL** to `https://api.developeros.page`, and allow access when Chrome asks.
-3. Paste the token from the dashboard: **Activity Tracker → Copy Token**.
+Nothing to deploy: the extension zip ships with the website.
+
+- Users open **https://developeros.page/extension**, download the zip, load it via `chrome://extensions` → **Developer mode** → **Load unpacked**, and paste the token from **Activity Tracker → Copy Token**. The server is preset to `https://api.developeros.page`.
+- After changing extension code, run `cd extensions/chrome && npm run package`, copy `developeros-extension.zip` to `frontend/public/downloads/`, and push.
+- For one-click installs, publish to the Chrome Web Store and set `VITE_EXTENSION_STORE_URL` on Vercel. See [EXTENSION.md](EXTENSION.md).
+
+The privacy policy at **https://developeros.page/privacy** also satisfies Google's requirement for publishing the OAuth consent screen (Step 5).
 
 ---
 

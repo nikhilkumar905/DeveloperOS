@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 import { API_BASE_URL } from '../lib/api';
 import './ActivityFeed.css';
 
@@ -117,6 +118,18 @@ const getHeatmapLevel = (ms: number): number => {
 
 const ActivityFeed: React.FC = () => {
   const { token } = useContext(AuthContext);
+
+  // Permanently deletes every tracked event and daily summary for this account
+  const handleClearActivity = async () => {
+    if (!window.confirm('Delete all of your tracked activity? This cannot be undone.')) return;
+    try {
+      await axios.delete(`${API_BASE_URL}/api/activity/logs`, { headers: { Authorization: `Bearer ${token}` } });
+      window.dispatchEvent(new Event('personalos-sync-complete'));
+    } catch (err) {
+      console.error('Could not clear activity', err);
+      window.alert('Could not clear your activity. Please try again.');
+    }
+  };
   const headers = { Authorization: `Bearer ${token}` };
 
   const [summary, setSummary] = useState<SummaryData | null>(null);
@@ -307,11 +320,14 @@ const ActivityFeed: React.FC = () => {
   return (
     <div className="activity-feed-page">
       {/* Page Header */}
-      <div className="activity-header">
+      <div className="activity-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
         <div className="activity-header-left">
           <h2>Activity Feed</h2>
-          <p>Your developer activity tracked automatically by the PersonalOS browser extension.</p>
+          <p>Your developer activity tracked automatically by the <Link to="/extension">DeveloperOS browser extension</Link>.</p>
         </div>
+        <button className="btn btn-danger" style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem' }} onClick={handleClearActivity}>
+          Clear all activity
+        </button>
       </div>
 
       {/* Summary Cards */}

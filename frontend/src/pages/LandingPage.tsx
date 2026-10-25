@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Terminal, Database, Code, Shield } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 import './LandingPage.css';
+import './InfoPage.css';
 
 const LandingPage: React.FC = () => {
   return (
@@ -51,6 +52,11 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </main>
+      <footer className="info-footer-links">
+        <Link to="/extension">Browser extension</Link>
+        <Link to="/privacy">Privacy</Link>
+        <a href="https://github.com/nikhilkumar905/DeveloperOS" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </footer>
     </div>
   );
 };
