@@ -619,7 +619,7 @@ General checklist for any host:
 
 ## 📄 License
 
-No license has been chosen yet (the `LICENSE` file is empty), so all rights are reserved by the author. Add a license (e.g. MIT) before inviting outside contributions.
+DeveloperOS is released under the [MIT License](LICENSE) © 2026 Nikhil Kumar Sah.
 
 ---
 
